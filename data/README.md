@@ -36,10 +36,11 @@ data/p24/
 └── Visualization/
 ```
 
-Only source inputs need to be copied initially. Output directories are created
-by the scripts when required. Before releasing the repository, add a complete
-input manifest (file name, purpose, provenance, and redistribution status) or a
-permanent link to the archived data package.
+The repository version includes source inputs, selected intermediate outputs,
+and final figures in this hierarchy. Output directories are created by the
+scripts when required. `SHA256SUMS.txt` provides a complete integrity manifest
+for the versioned data files; regenerate it whenever the published dataset is
+intentionally changed.
 
 Before publishing any input data, verify that redistribution is allowed and
 remove personal, confidential, or credential-bearing files. For large files,

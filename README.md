@@ -9,7 +9,7 @@ McNemar tests, similarity analyses, and publication figures.
 
 ```text
 epitope-prediction-benchmark/
-├── data/                 # Input data and generated tabular results (not tracked)
+├── data/                 # Versioned study inputs, intermediate outputs, and figures
 │   ├── p24/
 │   ├── pp65/
 │   └── PtxS1/
@@ -49,21 +49,17 @@ is optional.
 
 ## Input data
 
-Raw experimental reference files and tool outputs must be copied into
-`data/<antigen>/` while preserving the subdirectory and file names shown in
+The repository contains the experimental reference files, prediction outputs,
+RM/UP workbooks, selected intermediate results, and publication figures under
+`data/<antigen>/`. The original directory hierarchy is retained within the
+portable `p24`, `pp65`, and `PtxS1` directories described in
 [data/README.md](data/README.md). Generated workbooks are written alongside the
-corresponding antigen data, matching the original analysis workflow.
+corresponding antigen data, matching the validated analysis workflow.
 
-The repository currently contains the analysis code and the input-data layout,
-but not the study input files. Consequently, a fresh clone can pass the static
-repository checks but cannot reproduce numerical results until the data archive
-is installed. Benchmarking scripts stop with an error when required inputs are
-missing; they never report empty inputs as zero-valued results.
-
-Large raw files and generated results are excluded by `.gitignore`. If they are
-required for peer review and redistribution is permitted, publish them through
-Git LFS, Zenodo, Figshare, or an institutional repository and add the permanent
-link and DOI here. Do not commit data that cannot legally be redistributed.
+`data/SHA256SUMS.txt` records a checksum for every versioned data file. The
+repository does not distribute prediction-tool executables, model weights, or
+local software caches. Benchmarking scripts stop with an error when a required
+input is missing; they never report missing inputs as zero-valued results.
 
 ## Workflow overview
 

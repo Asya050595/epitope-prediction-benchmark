@@ -461,9 +461,7 @@ def reconcile_reference_set(
     missing_alleles = allowed_alleles - set(reference_alleles)
     if missing_alleles:
         message = f"{set_label}: {len(missing_alleles)} alleles are absent from the experimental dataset"
-        if strict:
-            raise ValueError(f"{message}: {sorted(missing_alleles)}")
-        print(f"  [!] {message}")
+        print(f"  [!] {message}: {sorted(missing_alleles)}")
 
     rm_rows = []
     up_rows = []

@@ -6,24 +6,9 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.ipynb_checkpoints/
 .venv/
 venv/
-
-# Raw data and generated analysis outputs
-data/*
-!data/README.md
-!data/.gitkeep
-results/*
-!results/.gitkeep
-
-# Generated figures and workbooks outside the data directory
-*.png
-*.pdf
-*.svg
-*.xlsx
-*.xls
-*.tsv
-*.csv
 
 # Model caches and local configuration
 .cache/
@@ -31,3 +16,5 @@ huggingface/
 .env
 .env.*
 
+# Temporary Microsoft Office files
+~$*
