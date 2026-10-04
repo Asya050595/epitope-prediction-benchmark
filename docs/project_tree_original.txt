@@ -1,0 +1,371 @@
+.
+├── project_tree.txt
+├── Запуски тулов на p24
+│   ├── Benchmarking MHC I
+│   │   ├── Benchmarking_p24_MHC_I_per_allele.xlsx
+│   │   └── Benchmarking_p24_MHC_I.xlsx
+│   ├── Benchmarking MHC II
+│   │   ├── Benchmarking_p24_MHC_II_per_allele.xlsx
+│   │   └── Benchmarking_p24_MHC_II.xlsx
+│   ├── FRANK MHC I
+│   │   └── FRANK_p24_MHC_I.xlsx
+│   ├── FRANK MHC II
+│   │   └── FRANK_p24_MHC_II.xlsx
+│   ├── Jaccard Index MHC I
+│   │   └── Jaccardp24_MHC_I.xlsx
+│   ├── Jaccard Index MHC II
+│   │   └── Jaccardp24_MHC_II.xlsx
+│   ├── Matches MHC I
+│   │   ├── Matches IEDB_I_Consensus
+│   │   │   ├── RM_p24_IEDB_I_Consensus.xlsx
+│   │   │   └── UP_p24_IEDB_I_Consensus.xlsx
+│   │   ├── Matches IEDB_I_NetMHCpan_4.1_BA
+│   │   │   ├── RM_p24_IEDB_I_NetMHCpan_4.1_BA.xlsx
+│   │   │   └── UP_p24_IEDB_I_NetMHCpan_4.1_BA.xlsx
+│   │   ├── Matches IEDB_I_NetMHCpan_4.1_EL
+│   │   │   ├── RM_p24_IEDB_I_NetMHCpan_4.1_EL.xlsx
+│   │   │   └── UP_p24_IEDB_I_NetMHCpan_4.1_EL.xlsx
+│   │   ├── Matches NetCTL_1.2
+│   │   │   ├── RM_p24_NetCTL_1.2.xlsx
+│   │   │   └── UP_p24_NetCTL_1.2.xlsx
+│   │   ├── Matches NetMHC_4.0
+│   │   │   ├── RM_p24_NetMHC_4.0.xlsx
+│   │   │   └── UP_p24_NetMHC_4.0.xlsx
+│   │   └── Matches NetMHCpan_4.1
+│   │       ├── RM_p24_NetMHCpan_4.1.xlsx
+│   │       └── UP_p24_NetMHCpan_4.1.xlsx
+│   ├── Matches MHC I comparison
+│   │   ├── IEDB_I_match_comparison_p24.xlsx
+│   │   ├── IEDB_I_match_comparison_SUMMARY.xlsx
+│   │   ├── NetMHCpan_4.1_match_comparison_ALL.xlsx
+│   │   └── NetMHCpan_4.1_match_comparison.xlsx
+│   ├── Matches MHC II
+│   │   ├── Matches IEDB_II_Consensus
+│   │   │   ├── RM_p24_IEDB_II_Consensus.xlsx
+│   │   │   └── UP_p24_IEDB_II_Consensus.xlsx
+│   │   ├── Matches IEDB_II_NetMHCIIpan_4.1_BA
+│   │   │   ├── RM_p24_IEDB_II_NetMHCIIpan_4.1_BA.xlsx
+│   │   │   └── UP_p24_IEDB_II_NetMHCIIpan_4.1_BA.xlsx
+│   │   ├── Matches IEDB_II_NetMHCIIpan_4.1_EL
+│   │   │   ├── RM_p24_IEDB_II_NetMHCIIpan_4.1_EL.xlsx
+│   │   │   └── UP_p24_IEDB_II_NetMHCIIpan_4.1_EL.xlsx
+│   │   ├── Matches NetMHC_II_2.3
+│   │   │   ├── RM_p24_NetMHC_II_2.3.xlsx
+│   │   │   └── UP_p24_NetMHC_II_2.3.xlsx
+│   │   └── Matches NetMHCIIpan_4.1
+│   │       ├── RM_p24_NetMHCIIpan_4.1.xlsx
+│   │       └── UP_p24_NetMHCIIpan_4.1.xlsx
+│   ├── Matches MHC II comparison
+│   │   ├── IEDB_II_match_comparison_p24.xlsx
+│   │   ├── IEDB_II_match_comparison_SUMMARY.xlsx
+│   │   ├── NetMHCIIpan_4.1_match_comparison_ALL.xlsx
+│   │   └── NetMHCIIpan_4.1_match_comparison.xlsx
+│   ├── McNemar test MHC I
+│   │   └── McNemar_p24_MHC_I.xlsx
+│   ├── McNemar test MHC II
+│   │   └── McNemar_p24_MHC_II.xlsx
+│   ├── MHC I
+│   │   ├── IEDB I
+│   │   │   ├── IEDB_I_Consensus_p24_8-14.tsv
+│   │   │   ├── IEDB_I_NetMHCpan_4.1_BA_p24_8-14.tsv
+│   │   │   └── IEDB_I_NetMHCpan_4.1_EL_p24_8-14.tsv
+│   │   ├── NetCTL
+│   │   │   ├── NetCTL_1.2_A1.html
+│   │   │   ├── NetCTL_1.2_A24.html
+│   │   │   ├── NetCTL_1.2_A26.html
+│   │   │   ├── NetCTL_1.2_A2.html
+│   │   │   ├── NetCTL_1.2_A3.html
+│   │   │   ├── NetCTL_1.2_B27.html
+│   │   │   ├── NetCTL_1.2_B39.html
+│   │   │   ├── NetCTL_1.2_B44.html
+│   │   │   ├── NetCTL_1.2_B58.html
+│   │   │   ├── NetCTL_1.2_B62.html
+│   │   │   ├── NetCTL_1.2_B7.html
+│   │   │   └── NetCTL_1.2_B8.html
+│   │   ├── NetMHC
+│   │   │   ├── NetMHC_p24_part_1_8-14.xls
+│   │   │   ├── NetMHC_p24_part_2_8-14.xls
+│   │   │   ├── NetMHC_p24_part_3_8-14.xls
+│   │   │   └── NetMHC_p24_part_4_8-14.xls
+│   │   └── NetMHCpan
+│   │       ├── NetMHCpan_p24_part_1_8-14.xls
+│   │       ├── NetMHCpan_p24_part_2_8-14.xls
+│   │       ├── NetMHCpan_p24_part_3_8-14.xls
+│   │       └── NetMHCpan_p24_part_4_8-14.xls
+│   ├── MHC II
+│   │   ├── IEDB II
+│   │   │   ├── IEDB_II_Consensus_p24_11-18_pep1.tsv
+│   │   │   ├── IEDB_II_NetMHCIIpan_4.1_BA_p24_11-18_pep1.tsv
+│   │   │   └── IEDB_II_NetMHCIIpan_4.1_EL_p24_11-18_pep1.tsv
+│   │   ├── NetMHC II
+│   │   │   ├── NetMHCII_p24_part_1_11.html
+│   │   │   ├── NetMHCII_p24_part_1_12.html
+│   │   │   ├── NetMHCII_p24_part_1_13.html
+│   │   │   ├── NetMHCII_p24_part_1_14.html
+│   │   │   ├── NetMHCII_p24_part_1_15.html
+│   │   │   ├── NetMHCII_p24_part_1_16.html
+│   │   │   ├── NetMHCII_p24_part_1_17.html
+│   │   │   ├── NetMHCII_p24_part_1_18.html
+│   │   │   ├── NetMHCII_p24_part_2_11.html
+│   │   │   ├── NetMHCII_p24_part_2_12.html
+│   │   │   ├── NetMHCII_p24_part_2_13.html
+│   │   │   ├── NetMHCII_p24_part_2_14.html
+│   │   │   ├── NetMHCII_p24_part_2_15.html
+│   │   │   ├── NetMHCII_p24_part_2_16.html
+│   │   │   ├── NetMHCII_p24_part_2_17.html
+│   │   │   └── NetMHCII_p24_part_2_18.html
+│   │   └── NetMHCIIpan
+│   │       ├── NetMHCIIpan_p24_part_1_11-18.xls
+│   │       └── NetMHCIIpan_p24_part_2_11-18.xls
+│   ├── Micro-Macro
+│   │   └── micro_macro_recovery.xlsx
+│   ├── Overlap Coefficient MHC I
+│   │   └── Overlapp24_MHC_I.xlsx
+│   ├── Overlap Coefficient MHC II
+│   │   └── Overlapp24_MHC_II.xlsx
+│   ├── p24.txt
+│   ├── p24.xlsx
+│   └── Визуализация
+├── Запуски тулов на pp65
+│   ├── Benchmarking MHC I
+│   │   ├── Benchmarking_pp65_MHC_I_per_allele.xlsx
+│   │   └── Benchmarking_pp65_MHC_I.xlsx
+│   ├── Benchmarking MHC II
+│   │   ├── Benchmarking_pp65_MHC_II_per_allele.xlsx
+│   │   └── Benchmarking_pp65_MHC_II.xlsx
+│   ├── FRANK MHC I
+│   │   └── FRANK_pp65_MHC_I.xlsx
+│   ├── FRANK MHC II
+│   │   └── FRANK_pp65_MHC_II.xlsx
+│   ├── Jaccard Index MHC I
+│   │   └── Jaccardpp65_MHC_I.xlsx
+│   ├── Jaccard Index MHC II
+│   │   └── Jaccardpp65_MHC_II.xlsx
+│   ├── Matches MHC I
+│   │   ├── Matches IEDB_I_Consensus
+│   │   │   ├── RM_pp65_IEDB_I_Consensus.xlsx
+│   │   │   └── UP_pp65_IEDB_I_Consensus.xlsx
+│   │   ├── Matches IEDB_I_NetMHCpan_4.1_BA
+│   │   │   ├── RM_pp65_IEDB_I_NetMHCpan_4.1_BA.xlsx
+│   │   │   └── UP_pp65_IEDB_I_NetMHCpan_4.1_BA.xlsx
+│   │   ├── Matches IEDB_I_NetMHCpan_4.1_EL
+│   │   │   ├── RM_pp65_IEDB_I_NetMHCpan_4.1_EL.xlsx
+│   │   │   └── UP_pp65_IEDB_I_NetMHCpan_4.1_EL.xlsx
+│   │   ├── Matches NetCTL_1.2
+│   │   │   ├── RM_pp65_NetCTL_1.2.xlsx
+│   │   │   └── UP_pp65_NetCTL_1.2.xlsx
+│   │   ├── Matches NetMHC_4.0
+│   │   │   ├── RM_pp65_NetMHC_4.0.xlsx
+│   │   │   └── UP_pp65_NetMHC_4.0.xlsx
+│   │   └── Matches NetMHCpan_4.1
+│   │       ├── RM_pp65_NetMHCpan_4.1.xlsx
+│   │       └── UP_pp65_NetMHCpan_4.1.xlsx
+│   ├── Matches MHC I comparison
+│   │   ├── IEDB_I_match_comparison_pp65.xlsx
+│   │   └── NetMHCpan_4.1_match_comparison.xlsx
+│   ├── Matches MHC II
+│   │   ├── Matches IEDB_II_Consensus
+│   │   │   ├── RM_pp65_IEDB_II_Consensus.xlsx
+│   │   │   └── UP_pp65_IEDB_II_Consensus.xlsx
+│   │   ├── Matches IEDB_II_NetMHCIIpan_4.1_BA
+│   │   │   ├── RM_pp65_IEDB_II_NetMHCIIpan_4.1_BA.xlsx
+│   │   │   └── UP_pp65_IEDB_II_NetMHCIIpan_4.1_BA.xlsx
+│   │   ├── Matches IEDB_II_NetMHCIIpan_4.1_EL
+│   │   │   ├── RM_pp65_IEDB_II_NetMHCIIpan_4.1_EL.xlsx
+│   │   │   └── UP_pp65_IEDB_II_NetMHCIIpan_4.1_EL.xlsx
+│   │   ├── Matches NetMHC_II_2.3
+│   │   │   ├── RM_pp65_NetMHC_II_2.3.xlsx
+│   │   │   └── UP_pp65_NetMHC_II_2.3.xlsx
+│   │   └── Matches NetMHCIIpan_4.1
+│   │       ├── RM_pp65_NetMHCIIpan_4.1.xlsx
+│   │       └── UP_pp65_NetMHCIIpan_4.1.xlsx
+│   ├── Matches MHC II comparison
+│   │   ├── IEDB_II_match_comparison_pp65.xlsx
+│   │   └── NetMHCIIpan_4.1_match_comparison.xlsx
+│   ├── McNemar test MHC I
+│   │   └── McNemar_pp65_MHC_I.xlsx
+│   ├── McNemar test MHC II
+│   │   └── McNemar_pp65_MHC_II.xlsx
+│   ├── MHC I
+│   │   ├── IEDB I
+│   │   │   ├── IEDB_I_Consensus_pp65_8-14.tsv
+│   │   │   ├── IEDB_I_NetMHCpan_4.1_BA_pp65_8-14.tsv
+│   │   │   └── IEDB_I_NetMHCpan_4.1_EL_pp65_8-14.tsv
+│   │   ├── NetCTL
+│   │   │   ├── NetCTL_1.2_A1.html
+│   │   │   ├── NetCTL_1.2_A24.html
+│   │   │   ├── NetCTL_1.2_A26.html
+│   │   │   ├── NetCTL_1.2_A2.html
+│   │   │   ├── NetCTL_1.2_A3.html
+│   │   │   ├── NetCTL_1.2_B44.html
+│   │   │   ├── NetCTL_1.2_B58.html
+│   │   │   ├── NetCTL_1.2_B62.html
+│   │   │   └── NetCTL_1.2_B7.html
+│   │   ├── NetMHC
+│   │   │   ├── NetMHC_pp65_part_1_8-14.xls
+│   │   │   └── NetMHC_pp65_part_2_8-14.xls
+│   │   └── NetMHCpan
+│   │       ├── NetMHCpan_pp65_part_1_8-14.xls
+│   │       └── NetMHCpan_pp65_part_2_8-14.xls
+│   ├── MHC II
+│   │   ├── IEDB II
+│   │   │   ├── IEDB_II_Consensus_pp65_11-18_pep1.tsv
+│   │   │   ├── IEDB_II_NetMHCIIpan_4.1_BA_pp65_11-18_pep1.tsv
+│   │   │   └── IEDB_II_NetMHCIIpan_4.1_EL_pp65_11-18_pep1.tsv
+│   │   ├── NetMHC II
+│   │   │   ├── NetMHCII_pp65_11.html
+│   │   │   ├── NetMHCII_pp65_12.html
+│   │   │   ├── NetMHCII_pp65_13.html
+│   │   │   ├── NetMHCII_pp65_14.html
+│   │   │   ├── NetMHCII_pp65_15.html
+│   │   │   ├── NetMHCII_pp65_16.html
+│   │   │   ├── NetMHCII_pp65_17.html
+│   │   │   └── NetMHCII_pp65_18.html
+│   │   └── NetMHCIIpan
+│   │       └── NetMHCIIpan_pp65_11-18.xls
+│   ├── Overlap Coefficient MHC I
+│   │   └── Overlappp65_MHC_I.xlsx
+│   ├── Overlap Coefficient MHC II
+│   │   └── Overlappp65_MHC_II.xlsx
+│   ├── pp65.txt
+│   └── pp65.xlsx
+├── Запуски тулов на PtxS1
+│   ├── Benchmarking MHC I
+│   │   ├── Benchmarking_PtxS1_MHC_I_per_allele.xlsx
+│   │   └── Benchmarking_PtxS1_MHC_I.xlsx
+│   ├── Benchmarking MHC II
+│   │   ├── Benchmarking_PtxS1_MHC_II_per_allele.xlsx
+│   │   └── Benchmarking_PtxS1_MHC_II.xlsx
+│   ├── Matches MHC I
+│   │   ├── Matches IEDB_I_Consensus
+│   │   │   ├── RM_PtxS1_IEDB_I_Consensus.xlsx
+│   │   │   └── UP_PtxS1_IEDB_I_Consensus.xlsx
+│   │   ├── Matches IEDB_I_NetMHCpan_4.1_BA
+│   │   │   ├── RM_PtxS1_IEDB_I_NetMHCpan_4.1_BA.xlsx
+│   │   │   └── UP_PtxS1_IEDB_I_NetMHCpan_4.1_BA.xlsx
+│   │   ├── Matches IEDB_I_NetMHCpan_4.1_EL
+│   │   │   ├── RM_PtxS1_IEDB_I_NetMHCpan_4.1_EL.xlsx
+│   │   │   └── UP_PtxS1_IEDB_I_NetMHCpan_4.1_EL.xlsx
+│   │   ├── Matches NetCTL_1.2
+│   │   │   ├── RM_PtxS1_NetCTL_1.2.xlsx
+│   │   │   └── UP_PtxS1_NetCTL_1.2.xlsx
+│   │   ├── Matches NetMHC_4.0
+│   │   │   ├── RM_PtxS1_NetMHC_4.0.xlsx
+│   │   │   └── UP_PtxS1_NetMHC_4.0.xlsx
+│   │   └── Matches NetMHCpan_4.1
+│   │       ├── RM_PtxS1_NetMHCpan_4.1.xlsx
+│   │       └── UP_PtxS1_NetMHCpan_4.1.xlsx
+│   ├── Matches MHC I comparison
+│   │   ├── IEDB_I_match_comparison_PtxS1.xlsx
+│   │   └── NetMHCpan_4.1_match_comparison.xlsx
+│   ├── Matches MHC II
+│   │   ├── Matches IEDB_II_Consensus
+│   │   │   ├── RM_PtxS1_IEDB_II_Consensus.xlsx
+│   │   │   └── UP_PtxS1_IEDB_II_Consensus.xlsx
+│   │   ├── Matches IEDB_II_NetMHCIIpan_4.1_BA
+│   │   │   ├── RM_PtxS1_IEDB_II_NetMHCIIpan_4.1_BA.xlsx
+│   │   │   └── UP_PtxS1_IEDB_II_NetMHCIIpan_4.1_BA.xlsx
+│   │   ├── Matches IEDB_II_NetMHCIIpan_4.1_EL
+│   │   │   ├── RM_PtxS1_IEDB_II_NetMHCIIpan_4.1_EL.xlsx
+│   │   │   └── UP_PtxS1_IEDB_II_NetMHCIIpan_4.1_EL.xlsx
+│   │   ├── Matches NetMHC_II_2.3
+│   │   │   ├── RM_PtxS1_NetMHC_II_2.3.xlsx
+│   │   │   └── UP_PtxS1_NetMHC_II_2.3.xlsx
+│   │   └── Matches NetMHCIIpan_4.1
+│   │       ├── RM_PtxS1_NetMHCIIpan_4.1.xlsx
+│   │       └── UP_PtxS1_NetMHCIIpan_4.1.xlsx
+│   ├── Matches MHC II comparison
+│   │   ├── IEDB_II_match_comparison_PtxS1.xlsx
+│   │   └── NetMHCIIpan_4.1_match_comparison.xlsx
+│   ├── MHC I
+│   │   ├── IEDB I
+│   │   │   ├── IEDB_I_Consensus_PtxS1_8-14.tsv
+│   │   │   ├── IEDB_I_NetMHCpan_4.1_BA_PtxS1_8-14.tsv
+│   │   │   └── IEDB_I_NetMHCpan_4.1_EL_PtxS1_8-14.tsv
+│   │   ├── NetCTL
+│   │   │   ├── NetCTL_1.2_A2.html
+│   │   │   ├── NetCTL_1.2_B44.html
+│   │   │   ├── NetCTL_1.2_B58.html
+│   │   │   └── NetCTL_1.2_B7.html
+│   │   ├── NetMHC
+│   │   │   └── NetMHC_PtxS1_8-14.xls
+│   │   └── NetMHCpan
+│   │       └── NetMHCpan_PtxS1_8-14.xls
+│   ├── MHC II
+│   │   ├── IEDB II
+│   │   │   ├── IEDB_II_Consensus_PtxS1_11-18_pep1.tsv
+│   │   │   ├── IEDB_II_NetMHCIIpan_4.1_BA_PtxS1_11-18_pep1.tsv
+│   │   │   └── IEDB_II_NetMHCIIpan_4.1_EL_PtxS1_11-18_pep1.tsv
+│   │   ├── NetMHC II
+│   │   │   ├── NetMHCII_PtxS1_11.html
+│   │   │   ├── NetMHCII_PtxS1_12.html
+│   │   │   ├── NetMHCII_PtxS1_13.html
+│   │   │   ├── NetMHCII_PtxS1_14.html
+│   │   │   ├── NetMHCII_PtxS1_15.html
+│   │   │   ├── NetMHCII_PtxS1_16.html
+│   │   │   ├── NetMHCII_PtxS1_17.html
+│   │   │   └── NetMHCII_PtxS1_18.html
+│   │   └── NetMHCIIpan
+│   │       └── NetMHCIIpan_PtxS1_11-18.xls
+│   ├── PtxS1.txt
+│   └── PtxS1.xlsx
+└── Скрипты
+    ├── Benchmarking
+    │   ├── allele_sets.py
+    │   ├── benchmarking_mhc_ii_per_allele.py
+    │   ├── benchmarking_mhc_ii.py
+    │   ├── benchmarking_mhc_i_per_allele.py
+    │   └── benchmarking_mhc_i.py
+    ├── FRANK score
+    │   ├── allele_sets.py
+    │   ├── frank_mhc_ii.py
+    │   └── frank_mhc_i.py
+    ├── Jaccard index
+    │   ├── allele_sets.py
+    │   ├── jaccard_mhc_ii.py
+    │   └── jaccard_mhc_i.py
+    ├── McNemar test
+    │   ├── allele_sets.py
+    │   ├── McNemar_mhc_ii_sensitivity.py
+    │   └── McNemar_mhc_i_sensitivity.py
+    ├── Micro-Macro recovery
+    │   ├── allele_sets.py
+    │   └── micro_macro_recovery.py
+    ├── Overlap coefficient
+    │   ├── allele_sets.py
+    │   ├── overlap_mhc_ii.py
+    │   └── overlap_mhc_i.py
+    ├── Визуализация
+    │   ├── allele_sets.py
+    │   ├── donut_chart_RM.py
+    │   ├── frank_mcnemar_combined.py
+    │   ├── peptide_overlap_diagnostic.py
+    │   ├── pie_chart_RM.py
+    │   ├── plot_similarity_delta_combined.py
+    │   ├── ring_chart_RM.py
+    │   ├── umap_pca_mhc_i_ii_combined.py
+    │   └── upset_plot_RM.py
+    ├── Визуализация IEDB и NetMHCpan
+    │   └── iedb_netmhcpan_combined_visualisation.py
+    ├── Поиск мэтчей
+    │   ├── IEDB_I_Consensus_search_for_matches.py
+    │   ├── IEDB_II_Consensus_search_for_matches.py
+    │   ├── IEDB_II_NetMHCIIpan_4_1_BA_search_for_matches.py
+    │   ├── IEDB_II_NetMHCIIpan_4_1_EL_search_for_matches.py
+    │   ├── IEDB_I_NetMHCpan_4_1_BA_search_for_matches.py
+    │   ├── IEDB_I_NetMHCpan_4_1_EL_search_for_matches.py
+    │   ├── NetCTL_1_2_search_for_matches.py
+    │   ├── NetMHC_4_0_search_for_matches.py
+    │   ├── NetMHC_II_2_3_search_for_matches.py
+    │   ├── NetMHCIIpan_4_1_search_for_matches.py
+    │   ├── NetMHCpan_4_1_search_for_matches.py
+    │   ├── QA_compile.txt
+    │   └── README_final_RM_UP.md
+    ├── Сравнение мэтчей MHC I
+    │   ├── iedb_i_match_comparison.py
+    │   └── netmhcpan_i_match_comparison.py
+    └── Сравнение мэтчей MHC II
+        ├── iedb_ii_match_comparison.py
+        └── netmhcpan_ii_match_comparison.py
+
+111 directories, 257 files

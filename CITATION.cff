@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the associated article and this repository."
+title: "Epitope prediction benchmark"
+type: software
+authors:
+  - name: "Asya050595"
+repository-code: "https://github.com/Asya050595/epitope-prediction-benchmark"
+license: MIT
+
