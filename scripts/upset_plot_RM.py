@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+"""Portable implementation of upset_plot_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 from project_paths import DATA_ROOT
 
@@ -80,7 +80,7 @@ PANEL_LETTER_SIZE = 10
 
 
 def normalize_allele(value) -> str:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of upset_plot_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     s = unicodedata.normalize("NFKC", str(value)).strip()
     s = re.sub(r"[\u2010-\u2015\u2212]", "-", s)
     if s.upper().startswith("HLA-"):
@@ -96,20 +96,20 @@ def find_column(columns, keyword: str) -> str:
     for c in columns:
         if keyword in str(c).lower():
             return c
-    raise ValueError(f"Required input or value was not found{keyword}Processing details{list(columns)}")
+    raise ValueError(f"Не найдена колонка, содержащая '{keyword}', среди {list(columns)}")
 
 
 def load_pairs(path: str) -> set:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of upset_plot_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if not os.path.isfile(path):
-        raise FileNotFoundError(f"Required input or value was not found{path}")
+        raise FileNotFoundError(f"Не найден input-файл: {path}")
 
     try:
         xl = pd.ExcelFile(path)
         sheet = "Union_OR" if "Union_OR" in xl.sheet_names else xl.sheet_names[0]
         df = pd.read_excel(path, sheet_name=sheet)
     except Exception as e:
-        raise RuntimeError(f"Processing details{path}: {e}") from e
+        raise RuntimeError(f"Не удалось прочитать файл {path}: {e}") from e
 
     if df.shape[1] == 0:
         return set()
@@ -128,12 +128,12 @@ def load_pairs(path: str) -> set:
 
 
 def build_tool_set(antigen: str, mhc_class: str, elementary_tools: list) -> set:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of upset_plot_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     pairs = set()
     for tool_token in elementary_tools:
         path = os.path.join(
             BASE_DIR,
-            f"Processing details{antigen}",
+            f"{antigen}",
             f"Matches MHC {mhc_class}",
             f"Matches {tool_token}",
             f"RM_{antigen}_{tool_token}.xlsx",
@@ -144,7 +144,7 @@ def build_tool_set(antigen: str, mhc_class: str, elementary_tools: list) -> set:
 
 
 def compute_exclusive_intersections(tool_sets: dict):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of upset_plot_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     all_pairs = set().union(*tool_sets.values())
     counts = {}
     for pair in all_pairs:
@@ -275,7 +275,7 @@ def load_panel_sets(antigen: str, mhc_class: str, tools_config: dict) -> dict:
     for tool_name, elementary in tools_config.items():
         pairs = build_tool_set(antigen, mhc_class, elementary)
         tool_sets[tool_name] = pairs
-        print(f"    {tool_name}: {len(pairs)}Processing details")
+        print(f"    {tool_name}: {len(pairs)} уникальных allele-peptide пар")
     return tool_sets
 
 

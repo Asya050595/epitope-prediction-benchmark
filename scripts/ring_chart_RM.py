@@ -157,14 +157,14 @@ def find_rm_file(antigen: str, mhc_class: str, dir_fragment: str, file_suffix: s
     """Resolve an RM input using the same layout as pie_chart_RM.py."""
     path = (
         ROOT
-        / f"Processing details{antigen}"
+        / f"{antigen}"
         / f"Matches MHC {mhc_class}"
         / dir_fragment
         / f"RM_{antigen}_{file_suffix}.xlsx"
     )
 
     if not path.is_file():
-        raise FileNotFoundError(f"Required input or value was not found{path}")
+        raise FileNotFoundError(f"Не найден input-файл: {path}")
 
     return path
 
@@ -183,7 +183,7 @@ def load_pairs_from_file(path: Path, class_fn) -> dict[str, set]:
         sheet = "Union_OR" if "Union_OR" in xl.sheet_names else xl.sheet_names[0]
         df = pd.read_excel(path, sheet_name=sheet)
     except Exception as e:
-        raise RuntimeError(f"Processing details{path}: {e}") from e
+        raise RuntimeError(f"Не удалось прочитать файл {path}: {e}") from e
 
     if df.empty or df.shape[1] == 0:
         return {}
@@ -194,8 +194,8 @@ def load_pairs_from_file(path: Path, class_fn) -> dict[str, set]:
 
     if allele_col is None or peptide_col is None:
         raise ValueError(
-            f"Required input or value was not found{path} "
-            f"Processing details{sheet!r}: {list(df.columns)}"
+            f"Не найдены столбцы allele/peptide в {path} "
+            f"на листе {sheet!r}: {list(df.columns)}"
         )
 
     gene_pairs: dict[str, set] = {}

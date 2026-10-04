@@ -111,11 +111,11 @@ def _value(value, fallback=0):
 
 
 def read_iedb_summary(path: Path) -> dict:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of iedb_netmhcpan_combined_visualisation. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if not path.is_file():
-        raise FileNotFoundError(f"Required input or value was not found{path}")
+        raise FileNotFoundError(f"Не найден входной файл: {path}")
 
-    df = pd.read_excel(path, sheet_name="Summary", header=None)
+    df = pd.read_excel(path, sheet_name="Сводка", header=None)
     all_stats = {}
 
     for _, row in df.iterrows():
@@ -235,7 +235,7 @@ def _to_int(value) -> int:
 def read_dtu_mhc_i(path: Path) -> dict:
     """Read NetMHCpan MHC-I EL/BA summary data."""
     if not path.is_file():
-        raise FileNotFoundError(f"Required input or value was not found{path}")
+        raise FileNotFoundError(f"Не найден входной файл: {path}")
 
     df = pd.read_excel(path, sheet_name=0, header=None)
     result = {}
@@ -276,7 +276,7 @@ def read_dtu_mhc_i(path: Path) -> dict:
 def read_dtu_mhc_ii(path: Path) -> dict:
     """Read NetMHCIIpan MHC-II EL/BA/affinity summary data."""
     if not path.is_file():
-        raise FileNotFoundError(f"Required input or value was not found{path}")
+        raise FileNotFoundError(f"Не найден входной файл: {path}")
 
     df = pd.read_excel(path, sheet_name=0, header=None)
     result = {}
@@ -410,11 +410,11 @@ def normalize_percentages(values, total, decimals=1):
     """Round percentages so that the displayed values sum to exactly 100%."""
     if total <= 0 or not values:
         raise ValueError(
-            "Processing details"
-            "Processing details"
+            "Невозможно нормализовать overlap-проценты: общий count должен "
+            "быть больше нуля."
         )
     if any(value < 0 for value in values):
-        raise ValueError("Processing details")
+        raise ValueError("Overlap-counts не могут быть отрицательными.")
 
     scale = 10 ** decimals
     raw = [value / total * 100 * scale for value in values]
@@ -434,7 +434,7 @@ def normalize_percentages(values, total, decimals=1):
     expected_sum = 100 * scale
     if sum(floored) != expected_sum:
         raise ArithmeticError(
-            "Processing details"
+            "Сумма отображаемых overlap-процентов не равна 100%."
         )
     return [value / scale for value in floored]
 
@@ -626,7 +626,7 @@ def draw_stacked_overlap(ax, row_names, segment_rows, segment_definitions,
     if not (
         len(row_names) == len(segment_rows) == len(expected_totals)
     ):
-        raise ValueError("Table status")
+        raise ValueError("Несогласованное число строк в overlap-данных.")
 
     # Validate that mutually exclusive categories form a complete partition,
     # then apply largest-remainder rounding. Consequently, both the stacked
@@ -641,8 +641,8 @@ def draw_stacked_overlap(ax, row_names, segment_rows, segment_definitions,
         expected_total = int(expected_total)
         if category_total != expected_total:
             raise ValueError(
-                f"Validation status{row_name}Processing details"
-                f"Processing details{category_total}Validation status"
+                f"Overlap-проверка не пройдена для {row_name}: сумма counts "
+                f"по категориям равна {category_total}, ожидается "
                 f"{expected_total}."
             )
 
@@ -653,7 +653,7 @@ def draw_stacked_overlap(ax, row_names, segment_rows, segment_definitions,
             sum(displayed_percentages), 100.0, abs_tol=1e-9
         ):
             raise ArithmeticError(
-                f"Processing details{row_name}Processing details"
+                f"Overlap-проценты для {row_name} не дают ровно 100.0%."
             )
         normalized_rows.append({
             key: (count, percentage / 100.0)
@@ -1157,24 +1157,24 @@ def make_combined_figure(iedb_i, iedb_ii, dtu_i, dtu_ii, output_path: Path):
         edgecolor="none",
     )
     plt.close(fig)
-    print(f"Saved output{output_path}")
+    print(f"\nСохранено: {output_path}")
 
 
 def main():
     print("=" * 72)
-    print("Processing details")
+    print("IEDB + NetMHC(pan): единая визуализация recovered matches")
     print("=" * 72)
 
-    print(f"Processing details{IEDB_SUMMARY_I}")
+    print(f"\n▶ Чтение IEDB HLA I:\n  {IEDB_SUMMARY_I}")
     iedb_i = read_iedb_summary(IEDB_SUMMARY_I)
 
-    print(f"Processing details{IEDB_SUMMARY_II}")
+    print(f"\n▶ Чтение IEDB HLA II:\n  {IEDB_SUMMARY_II}")
     iedb_ii = read_iedb_summary(IEDB_SUMMARY_II)
 
-    print(f"Processing details{DTU_SUMMARY_I}")
+    print(f"\n▶ Чтение DTU HLA I:\n  {DTU_SUMMARY_I}")
     dtu_i = read_dtu_mhc_i(DTU_SUMMARY_I)
 
-    print(f"Processing details{DTU_SUMMARY_II}")
+    print(f"\n▶ Чтение DTU HLA II:\n  {DTU_SUMMARY_II}")
     dtu_ii = read_dtu_mhc_ii(DTU_SUMMARY_II)
 
     make_combined_figure(
@@ -1184,7 +1184,7 @@ def main():
         dtu_ii,
         OUT_DIR / OUTPUT_NAME,
     )
-    print("Completed successfully")
+    print("Готово.")
 
 
 if __name__ == "__main__":

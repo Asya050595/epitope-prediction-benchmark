@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+"""Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 from __future__ import annotations
 
@@ -22,8 +22,8 @@ try:
     from allele_sets import get_allele_sets
 except ImportError as exc:
     sys.exit(
-        "Processing details"
-        f"Processing details{exc}"
+        "ERROR: положите allele_sets.py рядом со скриптом.\n"
+        f"Детали: {exc}"
     )
 
 
@@ -65,7 +65,7 @@ Pair = Tuple[str, str]  # (canonical_allele, peptide)
 # ──────────────────────────────────────────────────────────────────────────────
 
 def normalize_column_name(name: object) -> str:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     text = str(name).strip().lower()
     text = re.sub(r"[\s\-./()]+", "_", text)
     text = re.sub(r"[^a-z0-9_]+", "", text)
@@ -74,7 +74,7 @@ def normalize_column_name(name: object) -> str:
 
 
 def clean_peptide(value: object) -> Optional[str]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if pd.isna(value):
         return None
     peptide = str(value).strip().upper()
@@ -85,7 +85,7 @@ def clean_peptide(value: object) -> Optional[str]:
 
 
 def canonicalize_allele(value: object) -> Optional[str]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if pd.isna(value):
         return None
 
@@ -141,7 +141,7 @@ def canonicalize_allele(value: object) -> Optional[str]:
 
 
 def extract_canonical_alleles(value: object) -> List[str]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if pd.isna(value):
         return []
 
@@ -181,7 +181,7 @@ def extract_canonical_alleles(value: object) -> List[str]:
 
 
 def belongs_to_mhc_class(allele: str, mhc_class: str) -> bool:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if mhc_class == "I":
         return allele.startswith(MHC_I_PREFIXES)
     if mhc_class == "II":
@@ -190,7 +190,7 @@ def belongs_to_mhc_class(allele: str, mhc_class: str) -> bool:
 
 
 def find_allele_column(df: pd.DataFrame) -> Optional[str]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     exact_priority = [
         "allele",
         "hla",
@@ -233,7 +233,7 @@ def find_allele_column(df: pd.DataFrame) -> Optional[str]:
 
 
 def find_peptide_column(df: pd.DataFrame) -> Optional[str]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     exact_priority = [
         "peptide",
         "epitope",
@@ -262,7 +262,7 @@ def find_peptide_column(df: pd.DataFrame) -> Optional[str]:
 
 
 def get_column_by_normalized_name(df: pd.DataFrame, keys: Sequence[str]) -> Optional[str]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     norm_to_original = {normalize_column_name(c): c for c in df.columns}
     for key in keys:
         if key in norm_to_original:
@@ -271,7 +271,7 @@ def get_column_by_normalized_name(df: pd.DataFrame, keys: Sequence[str]) -> Opti
 
 
 def find_dataset_style_pair_columns(df: pd.DataFrame, mhc_class: str) -> Optional[Tuple[str, str]]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if mhc_class == "I":
         allele_col = get_column_by_normalized_name(
             df,
@@ -333,24 +333,24 @@ def find_dataset_style_pair_columns(df: pd.DataFrame, mhc_class: str) -> Optiona
 # ──────────────────────────────────────────────────────────────────────────────
 
 def read_pairs_from_excel(path: Path, mhc_class: str) -> Set[Pair]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     pairs: Set[Pair] = set()
 
     if not path.exists():
-        print(f"Required input or value was not found{path}")
+        print(f"    ⚠ Файл не найден: {path}")
         return pairs
 
     try:
         xls = pd.ExcelFile(path)
     except Exception as exc:
-        print(f"Processing details{path}\n      {exc}")
+        print(f"    ⚠ Не удалось открыть Excel: {path}\n      {exc}")
         return pairs
 
     for sheet_name in xls.sheet_names:
         try:
             df = pd.read_excel(xls, sheet_name=sheet_name, dtype=str)
         except Exception as exc:
-            print(f"Processing details{sheet_name}Processing details{path.name}: {exc}")
+            print(f"    ⚠ Не удалось прочитать лист '{sheet_name}' в {path.name}: {exc}")
             continue
 
         if df.empty:
@@ -379,12 +379,12 @@ def read_pairs_from_excel(path: Path, mhc_class: str) -> Set[Pair]:
 
 
 def discover_tool_files(antigen: str, mhc_class: str) -> Dict[str, Dict[str, Optional[Path]]]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
-    matches_dir = CONTROL_DIR / f"Processing details{antigen}" / f"Matches MHC {mhc_class}"
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
+    matches_dir = CONTROL_DIR / f"{antigen}" / f"Matches MHC {mhc_class}"
     result: Dict[str, Dict[str, Optional[Path]]] = {}
 
     if not matches_dir.exists():
-        print(f"Required input or value was not found{matches_dir}")
+        print(f"  ⚠ Папка с matches не найдена: {matches_dir}")
         return result
 
     for tool_label in TOOL_SUFFIXES:
@@ -402,21 +402,21 @@ def discover_tool_files(antigen: str, mhc_class: str) -> Dict[str, Dict[str, Opt
         up_file = choose_best_file(up_files, "UP", antigen, tool_label)
 
         if rm_file is None and up_file is None:
-            print(f"    ⚠ {tool_label}Required input or value was not found{folder}")
+            print(f"    ⚠ {tool_label}: RM/UP-файлы не найдены в {folder}")
             continue
 
         result[tool_label] = {"RM": rm_file, "UP": up_file}
 
         if rm_file is None:
-            print(f"    ⚠ {tool_label}Required input or value was not found")
+            print(f"    ⚠ {tool_label}: RM-файл не найден")
         if up_file is None:
-            print(f"    ⚠ {tool_label}Required input or value was not found")
+            print(f"    ⚠ {tool_label}: UP-файл не найден; для RM+UP будет использован только RM")
 
     return result
 
 
 def choose_best_file(files: Sequence[Path], kind: str, antigen: str, tool_label: str) -> Optional[Path]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if not files:
         return None
 
@@ -435,7 +435,7 @@ def choose_best_file(files: Sequence[Path], kind: str, antigen: str, tool_label:
 
     # Path configuration.
     chosen = sorted(files, key=lambda p: (len(p.name), p.name.lower()))[0]
-    print(f"    ⚠ {tool_label}Processing details{kind}Processing details{chosen.name}")
+    print(f"    ⚠ {tool_label}: найдено несколько {kind}-файлов, выбран {chosen.name}")
     return chosen
 
 
@@ -444,7 +444,7 @@ def choose_best_file(files: Sequence[Path], kind: str, antigen: str, tool_label:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def overlap_coefficient(a: Set[Pair], b: Set[Pair]) -> Optional[float]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     denom = min(len(a), len(b))
     if denom == 0:
         return None
@@ -452,7 +452,7 @@ def overlap_coefficient(a: Set[Pair], b: Set[Pair]) -> Optional[float]:
 
 
 def build_overlap_matrix(pair_sets: Dict[str, Set[Pair]]) -> pd.DataFrame:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     tools = sorted(pair_sets.keys(), key=str.lower)
     matrix = pd.DataFrame(index=tools, columns=tools, dtype=object)
 
@@ -467,7 +467,7 @@ def build_overlap_matrix(pair_sets: Dict[str, Set[Pair]]) -> pd.DataFrame:
 
 
 def write_excel(output_path: Path, rm_matrix: pd.DataFrame, all_matrix: pd.DataFrame) -> None:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
@@ -478,7 +478,7 @@ def write_excel(output_path: Path, rm_matrix: pd.DataFrame, all_matrix: pd.DataF
 
 
 def format_workbook(path: Path) -> None:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of overlap_mhc_i. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     wb = load_workbook(path)
 
     header_fill = PatternFill("solid", fgColor="D9EAF7")
@@ -526,7 +526,7 @@ def format_workbook(path: Path) -> None:
 
 def process_antigen(antigen: str) -> None:
     print("=" * 80)
-    print(f"Processing details{antigen} | {MHC_LABEL}")
+    print(f"Антиген: {antigen} | {MHC_LABEL}")
     print("=" * 80)
 
     dataset_path = DATASET_PATHS[antigen]
@@ -534,19 +534,19 @@ def process_antigen(antigen: str) -> None:
     dataset_pairs_all = read_pairs_from_excel(dataset_path, MHC_CLASS)
     dataset_pairs = {pair for pair in dataset_pairs_all if pair[0] in evaluable_alleles}
     print(
-        f"  Evaluable set: {len(evaluable_alleles)}Allele status"
-        f"Processing details{len(dataset_pairs)}Processing details{len(dataset_pairs_all)}"
+        f"  Evaluable set: {len(evaluable_alleles)} аллелей; "
+        f"dataset-пар {len(dataset_pairs)} из {len(dataset_pairs_all)}"
     )
 
     tool_files = discover_tool_files(antigen, MHC_CLASS)
     if not tool_files:
-        print(f"Processing details{antigen} {MHC_LABEL}Processing details")
+        print(f"  ⚠ Нет входных RM/UP файлов для {antigen} {MHC_LABEL}. Excel не создан.")
         return
 
     rm_sets: Dict[str, Set[Pair]] = {}
     all_sets: Dict[str, Set[Pair]] = {}
 
-    print("Processing details")
+    print("\n  Чтение RM/UP и фильтрация по evaluable set:")
     for tool_label, files in tool_files.items():
         rm_file = files.get("RM")
         up_file = files.get("UP")
@@ -561,16 +561,16 @@ def process_antigen(antigen: str) -> None:
             outside_dataset = rm_pairs - dataset_pairs
             if outside_dataset:
                 print(
-                    f"    ⚠ {tool_label}: {len(outside_dataset)}Required input or value was not found"
-                    f"Processing details"
+                    f"    ⚠ {tool_label}: {len(outside_dataset)} RM-пар не найдены в dataset "
+                    f"после нормализации allele/peptide"
                 )
 
         rm_sets[tool_label] = rm_pairs
         all_sets[tool_label] = rm_pairs | up_pairs
 
         print(
-            f"    {tool_label}: RM={len(rm_pairs)} ({len(rm_all) - len(rm_pairs)}Processing details"
-            f"UP={len(up_pairs)} ({len(up_all) - len(up_pairs)}Processing details"
+            f"    {tool_label}: RM={len(rm_pairs)} ({len(rm_all) - len(rm_pairs)} исключено), "
+            f"UP={len(up_pairs)} ({len(up_all) - len(up_pairs)} исключено), "
             f"RM+UP unique={len(all_sets[tool_label])}"
         )
 
@@ -579,12 +579,12 @@ def process_antigen(antigen: str) -> None:
 
     output_path = (
         CONTROL_DIR
-        / f"Processing details{antigen}"
+        / f"{antigen}"
         / f"Overlap Coefficient MHC {MHC_CLASS}"
         / f"Overlap{antigen}_MHC_{MHC_CLASS}.xlsx"
     )
     write_excel(output_path, rm_matrix, all_matrix)
-    print(f"Saved output{output_path}\n")
+    print(f"\n  ✓ Сохранено: {output_path}\n")
 
 
 def main() -> None:

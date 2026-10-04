@@ -228,7 +228,7 @@ def input_path(metric: str, antigen: str, mhc_class: str) -> Path:
     filename = config["filename"].format(
         antigen=antigen, mhc_class=mhc_class
     )
-    return BASE_DIR / f"Processing details{antigen}" / folder / filename
+    return BASE_DIR / f"{antigen}" / folder / filename
 
 
 def read_matrix(path: Path, sheet_name: str, labels_map: dict[str, str]):

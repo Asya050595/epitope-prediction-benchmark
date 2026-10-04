@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+"""Portable implementation of frank_mcnemar_combined. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 from __future__ import annotations
 
@@ -67,7 +67,7 @@ ROW_TITLES = {
 def mcnemar_input(antigen: str, mhc_class: str) -> Path:
     return (
         BASE_DIR
-        / f"Processing details{antigen}"
+        / f"{antigen}"
         / f"McNemar test MHC {mhc_class}"
         / f"McNemar_{antigen}_MHC_{mhc_class}.xlsx"
     )
@@ -76,7 +76,7 @@ def mcnemar_input(antigen: str, mhc_class: str) -> Path:
 def frank_input(antigen: str, mhc_class: str) -> Path:
     return (
         BASE_DIR
-        / f"Processing details{antigen}"
+        / f"{antigen}"
         / f"FRANK MHC {mhc_class}"
         / f"FRANK_{antigen}_MHC_{mhc_class}.xlsx"
     )
@@ -99,7 +99,7 @@ def configure_style() -> None:
 
 
 def add_panel_heading(ax, letter: str, title: str, y: float = 1.08) -> None:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of frank_mcnemar_combined. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     ax.text(
         -0.15,
         y,
@@ -115,7 +115,7 @@ def add_panel_heading(ax, letter: str, title: str, y: float = 1.08) -> None:
 
 
 class PipelineError(Exception):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of frank_mcnemar_combined. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 
 # ---------------------------------------------------------------------
@@ -148,18 +148,18 @@ def _find_header_row(ws, header_value: str, col: int = 1, max_search: int = 15) 
         if ws.cell(row=row, column=col).value == header_value:
             return row
     raise PipelineError(
-        f"Required input or value was not found{header_value}Processing details"
-        f"'{ws.title}Validation status{max_search}Table status"
+        f"Не найдена строка заголовка '{header_value}' в листе "
+        f"'{ws.title}' (проверены первые {max_search} строк)."
     )
 
 
 def load_mcnemar_overview(path: Path) -> list[dict]:
     if not path.is_file():
-        raise PipelineError(f"Required input or value was not found{path}")
+        raise PipelineError(f"Не найден входной файл McNemar: {path}")
 
     wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
     if "Tool_overview" not in wb.sheetnames:
-        raise PipelineError(f"Processing details{path}")
+        raise PipelineError(f"В файле нет листа 'Tool_overview': {path}")
     ws = wb["Tool_overview"]
     header_row = _find_header_row(ws, "Tool")
 
@@ -171,7 +171,7 @@ def load_mcnemar_overview(path: Path) -> list[dict]:
     missing = [name for name in required if name not in columns]
     if missing:
         raise PipelineError(
-            f"Required input or value was not found{missing}: {path}"
+            f"В листе 'Tool_overview' отсутствуют столбцы {missing}: {path}"
         )
 
     rows = []
@@ -199,7 +199,7 @@ def load_mcnemar_overview(path: Path) -> list[dict]:
 def load_mcnemar_holm(path: Path) -> dict[frozenset, float]:
     wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
     if "Pairwise_results" not in wb.sheetnames:
-        raise PipelineError(f"Processing details{path}")
+        raise PipelineError(f"В файле нет листа 'Pairwise_results': {path}")
     ws = wb["Pairwise_results"]
     header_row = _find_header_row(ws, "Comparison ID")
     columns = {
@@ -210,7 +210,7 @@ def load_mcnemar_holm(path: Path) -> dict[frozenset, float]:
     missing = [name for name in required if name not in columns]
     if missing:
         raise PipelineError(
-            f"Required input or value was not found{missing}: {path}"
+            f"В листе 'Pairwise_results' отсутствуют столбцы {missing}: {path}"
         )
 
     values = {}
@@ -241,7 +241,7 @@ def mcnemar_tool_color(tool_name: str, context: str = "") -> str:
         if re.search(r"\bNetCTL\b", tool_name):
             return COLOR_NETCTL
     raise PipelineError(
-        f"Processing details{tool_name}' ({context}Processing details"
+        f"Для инструмента '{tool_name}' ({context}) не задано цветовое правило."
     )
 
 
@@ -265,8 +265,8 @@ def build_mcnemar_group(antigen: str, mhc_class: str) -> dict:
         p_value = holm.get(frozenset((tools[left], tools[right])))
         if p_value is None:
             print(
-                f"Warning{tools[left]}' vs "
-                f"'{tools[right]}' ({antigen}, HLA {mhc_class}Processing details",
+                f"ВНИМАНИЕ: нет Holm p-value для '{tools[left]}' vs "
+                f"'{tools[right]}' ({antigen}, HLA {mhc_class}); скобка пропущена.",
                 file=sys.stderr,
             )
             continue
@@ -310,7 +310,7 @@ def build_mcnemar_groups(mhc_class: str) -> list[dict]:
 
 
 def mcnemar_heading_y(groups: list[dict]) -> float:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of frank_mcnemar_combined. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     return 1.08
 
 
@@ -539,19 +539,19 @@ def load_frank_tool_data(
     method_selection: list[tuple[str, str]],
 ) -> dict[str, ToolData]:
     if not path.is_file():
-        raise PipelineError(f"Required input or value was not found{path}")
+        raise PipelineError(f"Не найден входной файл FRANK: {path}")
 
     try:
         excel = pd.ExcelFile(path, engine="openpyxl")
     except Exception as exc:
-        raise PipelineError(f"Processing details{path}: {exc}") from exc
+        raise PipelineError(f"Не удалось открыть файл {path}: {exc}") from exc
     if "Summary" not in excel.sheet_names:
-        raise PipelineError(f"Required input or value was not found{path}")
+        raise PipelineError(f"В файле отсутствует лист 'Summary': {path}")
 
     summary = excel.parse("Summary")
     missing = [name for name in REQUIRED_SUMMARY_COLUMNS if name not in summary.columns]
     if missing:
-        raise PipelineError(f"Required input or value was not found{missing}: {path}")
+        raise PipelineError(f"В листе 'Summary' отсутствуют столбцы {missing}: {path}")
 
     result = {}
     for tool, score in method_selection:
@@ -559,34 +559,34 @@ def load_frank_tool_data(
         if len(matches) != 1:
             available = summary.loc[summary["Tool"] == tool, "Score"].tolist()
             raise PipelineError(
-                f"Processing details{path}Processing details{tool}', Score='{score}Processing details"
-                f"{len(matches)}Processing details{available}"
+                f"В {path} комбинация Tool='{tool}', Score='{score}' найдена "
+                f"{len(matches)} раз. Доступные Score: {available}"
             )
         sheet = matches.iloc[0]["Sheet"]
         if not isinstance(sheet, str) or sheet not in excel.sheet_names:
             raise PipelineError(
-                f"Processing details{tool}', Score='{score}Required input or value was not found"
-                f"'{sheet}Processing details{path}."
+                f"Для Tool='{tool}', Score='{score}' указан отсутствующий лист "
+                f"'{sheet}' в файле {path}."
             )
 
         frame = excel.parse(sheet)
         missing = [name for name in REQUIRED_DETAIL_COLUMNS if name not in frame.columns]
         if missing:
             raise PipelineError(
-                f"Processing details{sheet}Required input or value was not found{missing}: {path}"
+                f"В листе '{sheet}' отсутствуют столбцы {missing}: {path}"
             )
         duplicates = frame.duplicated(
             subset=["Allele", "Peptide", "Length"], keep=False
         )
         if duplicates.any():
             raise PipelineError(
-                f"Processing details{sheet}Processing details"
-                f"({int(duplicates.sum())}Table status{path}"
+                f"В листе '{sheet}' найдены дубликаты Allele+Peptide+Length "
+                f"({int(duplicates.sum())} строк): {path}"
             )
         ok = frame[frame["Status"] == "ok"].copy()
         if ok.empty:
             raise PipelineError(
-                f"Processing details{sheet}Table status{path}"
+                f"В листе '{sheet}' нет строк со Status == 'ok': {path}"
             )
         result[tool] = ToolData(
             tool=tool,
@@ -628,7 +628,7 @@ def pairwise_frank(
             0,
             0,
             None,
-            "Processing details",
+            "нет общих валидных пар",
         )
 
     mismatch = merged["N_total_peptides_A"] != merged["N_total_peptides_B"]
@@ -652,7 +652,7 @@ def pairwise_frank(
             ties,
             0,
             None,
-            "Processing details",
+            "нет пар без ничьей",
         )
 
     p_value = binomtest(wins_a, n_nontie, p=0.5, alternative="two-sided").pvalue
@@ -745,7 +745,7 @@ def _frank_offsets(n_tools: int) -> np.ndarray:
 
 
 def _upper_boxplot_whisker(values: np.ndarray) -> float:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of frank_mcnemar_combined. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     clean = np.asarray(values, dtype=float)
     clean = clean[np.isfinite(clean)]
     if clean.size == 0:
@@ -910,7 +910,7 @@ def draw_frank_panel(
 # ---------------------------------------------------------------------
 
 def add_shared_legend(fig: plt.Figure) -> None:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of frank_mcnemar_combined. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     entries = [
         ("IEDB Consensus", COLOR_IEDB_CONSENSUS),
         ("IEDB NetMHCpan / NetMHCIIpan BA", COLOR_IEDB_BA),
@@ -942,7 +942,7 @@ def add_row_title(
     panel_heading_ys,
     title: str,
 ) -> None:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of frank_mcnemar_combined. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     boxes = [ax.get_position() for ax in axes_row]
     x_center = (min(box.x0 for box in boxes) + max(box.x1 for box in boxes)) / 2
     heading_tops = [
@@ -962,11 +962,11 @@ def add_row_title(
 
 def build_final_figure() -> plt.Figure:
     configure_style()
-    print("Loaded input")
+    print("Загрузка данных McNemar...")
     mcnemar_i = build_mcnemar_groups("I")
     mcnemar_ii = build_mcnemar_groups("II")
 
-    print("Loaded input")
+    print("Загрузка данных FRANK и расчёт попарных тестов + Holm...")
     frank_i = build_frank_context("I")
     frank_ii = build_frank_context("II")
 
@@ -1028,16 +1028,16 @@ def main() -> None:
         facecolor="white",
     )
     plt.close(figure)
-    print(f"Saved output{OUTPUT_FILE}")
+    print(f"Сохранено: {OUTPUT_FILE}")
 
 
 if __name__ == "__main__":
     try:
         main()
     except PipelineError as exc:
-        print(f"Error{exc}", file=sys.stderr)
+        print(f"\n[ОШИБКА] {exc}", file=sys.stderr)
         sys.exit(1)
     except Exception:
-        print("Error", file=sys.stderr)
+        print("\n[НЕОЖИДАННАЯ ОШИБКА]", file=sys.stderr)
         traceback.print_exc()
         sys.exit(1)

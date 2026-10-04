@@ -1,13 +1,13 @@
 # Data directory
 
-The scripts expect one directory per antigen. The original workstation folders
-named `Запуски тулов на ...` have been replaced by portable English paths:
+The scripts expect one directory per antigen. Machine-specific source folders
+have been replaced by these portable repository paths:
 
-| Original folder | Repository folder |
+| Antigen | Repository folder |
 |---|---|
-| `Запуски тулов на p24` | `data/p24` |
-| `Запуски тулов на pp65` | `data/pp65` |
-| `Запуски тулов на PtxS1` | `data/PtxS1` |
+| p24 | `data/p24` |
+| pp65 | `data/pp65` |
+| PtxS1 | `data/PtxS1` |
 
 Preserve the file names produced by each prediction tool. A shortened example
 is shown below; the same pattern is used for all three antigens.
@@ -37,10 +37,10 @@ data/p24/
 ```
 
 Only source inputs need to be copied initially. Output directories are created
-by the scripts when required. Consult `project_tree.txt` in `docs/` for the full
-file inventory from the original analysis workspace.
+by the scripts when required. Before releasing the repository, add a complete
+input manifest (file name, purpose, provenance, and redistribution status) or a
+permanent link to the archived data package.
 
 Before publishing any input data, verify that redistribution is allowed and
 remove personal, confidential, or credential-bearing files. For large files,
 prefer an archival data repository and record its DOI in the main README.
-

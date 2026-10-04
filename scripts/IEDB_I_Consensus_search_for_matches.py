@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+"""Portable implementation of IEDB_I_Consensus_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 from project_paths import DATA_ROOT
 
@@ -86,7 +86,7 @@ def load_validated(xlsx_path: str) -> set:
     required = {"HLA allele", "CTL epitopes"}
     missing = required - set(df.columns)
     if missing:
-        raise ValueError(f"Processing details{xlsx_path}Required input or value was not found{missing}")
+        raise ValueError(f"В файле {xlsx_path} не найдены столбцы: {missing}")
     pairs = set()
     for _, row in df[["HLA allele", "CTL epitopes"]].dropna().iterrows():
         a = normalize_allele(str(row["HLA allele"]))
@@ -97,27 +97,27 @@ def load_validated(xlsx_path: str) -> set:
 
 
 def load_predictions_raw(tsv_path: str) -> pd.DataFrame:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of IEDB_I_Consensus_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     df = pd.read_csv(tsv_path, sep="\t")
     df.columns = [c.strip() for c in df.columns]
     return df
 
 
 def check_tsv_structure(df: pd.DataFrame) -> tuple[bool, list]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of IEDB_I_Consensus_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     critical = False
     warnings = []
-    print(f"Validation status")
+    print(f"\n  ── Проверка структуры TSV ───────────────────────────")
 
     # Implementation detail; see the repository documentation.
     missing_cols = REQUIRED_TSV_COLS - set(df.columns)
     if missing_cols:
-        msg = f"Required input or value was not found{', '.join(sorted(missing_cols))}"
-        warnings.append(("Processing details", msg))
-        print(f"Processing details{msg}")
+        msg = f"Отсутствуют обязательные столбцы: {', '.join(sorted(missing_cols))}"
+        warnings.append(("[КРИТ]", msg))
+        print(f"  [КРИТ] {msg}")
         critical = True
     else:
-        print(f"Processing details")
+        print(f"  [v] Все обязательные столбцы присутствуют")
 
     if critical:
         print(f"  ─────────────────────────────────────────────────────")
@@ -130,36 +130,36 @@ def check_tsv_structure(df: pd.DataFrame) -> tuple[bool, list]:
         n_missing = converted.isna().sum()  # Implementation detail; see the repository documentation.
         if n_missing > 0:
             if col in ALLOWED_NAN_COLS:
-                msg = f"Processing details{col}': {n_missing}Processing details"
+                msg = f"Столбец '{col}': {n_missing} пропусков/нечисловых значений (допустимо, исключены из анализа)"
                 warnings.append(("[!]", msg))
                 print(f"  [!] {msg}")
             else:
-                msg = f"Processing details{col}': {n_missing}Error"
-                warnings.append(("Processing details", msg))
-                print(f"Processing details{msg}")
+                msg = f"Столбец '{col}': {n_missing} пропусков/нечисловых значений — критическая ошибка"
+                warnings.append(("[КРИТ]", msg))
+                print(f"  [КРИТ] {msg}")
                 critical = True
         else:
-            print(f"Processing details{col}Processing details")
+            print(f"  [v] Столбец '{col}': все значения числовые")
 
     # Validation.
     lengths_col = pd.to_numeric(df["peptide length"], errors="coerce")
     n_nan_len = lengths_col.isna().sum()
     if n_nan_len > 0:
-        msg = f"Processing details{n_nan_len}Processing details"
-        warnings.append(("Processing details", msg))
-        print(f"Processing details{msg}")
+        msg = f"Столбец 'peptide length': {n_nan_len} нечисловых/пустых значений"
+        warnings.append(("[КРИТ]", msg))
+        print(f"  [КРИТ] {msg}")
         critical = True
     else:
         # Implementation detail; see the repository documentation.
         actual_lens = df["peptide"].str.len()
         mismatch = (actual_lens != lengths_col).sum()
         if mismatch > 0:
-            msg = f"Validation status{mismatch}Table status"
-            warnings.append(("Processing details", msg))
-            print(f"Processing details{msg}")
+            msg = f"Столбец 'peptide length' не совпадает с фактической длиной пептида: {mismatch} строк"
+            warnings.append(("[КРИТ]", msg))
+            print(f"  [КРИТ] {msg}")
             critical = True
         else:
-            print(f"Peptide status")
+            print(f"  [v] Столбец 'peptide length' соответствует фактической длине пептидов")
 
         # Implementation detail; see the repository documentation.
         out_of_range = df[(lengths_col < PEPTIDE_LEN_MIN) | (lengths_col > PEPTIDE_LEN_MAX)]
@@ -167,13 +167,13 @@ def check_tsv_structure(df: pd.DataFrame) -> tuple[bool, list]:
             bad_lens = sorted(lengths_col[
                 (lengths_col < PEPTIDE_LEN_MIN) | (lengths_col > PEPTIDE_LEN_MAX)
             ].dropna().unique().tolist())
-            msg = (f"Peptide status{PEPTIDE_LEN_MIN}-{PEPTIDE_LEN_MAX}: "
-                   f"{len(out_of_range)}Table status{bad_lens}")
-            warnings.append(("Processing details", msg))
-            print(f"Processing details{msg}")
+            msg = (f"Пептиды вне диапазона {PEPTIDE_LEN_MIN}-{PEPTIDE_LEN_MAX}: "
+                   f"{len(out_of_range)} строк, длины: {bad_lens}")
+            warnings.append(("[КРИТ]", msg))
+            print(f"  [КРИТ] {msg}")
             critical = True
         else:
-            print(f"Peptide status{PEPTIDE_LEN_MIN}-{PEPTIDE_LEN_MAX}")
+            print(f"  [v] Все длины пептидов в диапазоне {PEPTIDE_LEN_MIN}-{PEPTIDE_LEN_MAX}")
 
     # Allele handling.
     peptides_by_allele = {
@@ -187,28 +187,28 @@ def check_tsv_structure(df: pd.DataFrame) -> tuple[bool, list]:
         differing   = [a for a in allele_list[1:] if peptides_by_allele[a] != ref_set]
         if differing:
             short_list = ", ".join(sorted(differing)[:5]) + ("..." if len(differing) > 5 else "")
-            msg = (f"Allele status{ref_allele}): {short_list}")
-            warnings.append(("Processing details", msg))
-            print(f"Processing details{msg}")
+            msg = (f"Разные наборы пептидов у аллелей (отличаются от {ref_allele}): {short_list}")
+            warnings.append(("[КРИТ]", msg))
+            print(f"  [КРИТ] {msg}")
             critical = True
         else:
-            print(f"Allele status{len(ref_set)}Processing details")
+            print(f"  [v] Идентичный набор пептидов у всех аллелей ({len(ref_set)} уник.)")
 
     # Allele handling.
     n_dupes = df.duplicated(subset=["allele", "peptide"]).sum()
     if n_dupes > 0:
-        msg = f"Processing details{n_dupes}Allele status"
+        msg = f"Найдено {n_dupes} дублирующихся пар аллель-пептид (будут дедуплицированы)"
         warnings.append(("[!]", msg))
         print(f"  [!] {msg}")
     else:
-        print(f"Allele status")
+        print(f"  [v] Дублей аллель-пептид нет")
 
     print(f"  ─────────────────────────────────────────────────────")
     return critical, warnings
 
 
 def apply_types(df: pd.DataFrame) -> pd.DataFrame:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of IEDB_I_Consensus_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     df = df.copy()
     df["allele"]  = df["allele"].apply(normalize_allele)
     df["peptide"] = df["peptide"].astype(str).str.strip()
@@ -220,21 +220,21 @@ def apply_types(df: pd.DataFrame) -> pd.DataFrame:
 def check_alleles(antigen: str, found_alleles: list) -> bool:
     expected = EXPECTED_ALLELES.get(antigen)
     if expected is None:
-        print(f"Validation status{antigen}Processing details")
+        print(f"  [ПРОВЕРКА АЛЛЕЛЕЙ] Список для '{antigen}' не задан, пропускаем.")
         return True
     found_set = set(found_alleles)
     missing   = expected - found_set
     extra     = found_set - expected
     set_ok    = not missing and not extra
-    print(f"Validation status")
-    print(f"Validation status{len(expected)}Processing details{len(found_set)}")
-    print(f"Validation status{'OK' if set_ok else 'Processing details'}")
+    print(f"\n  ── Проверка аллелей ─────────────────────────────────")
+    print(f"  Ожидается : {len(expected)}  |  Найдено: {len(found_set)}")
+    print(f"  Совпадение: {'OK' if set_ok else 'НЕТ'}")
     if missing:
-        print(f"Required input or value was not found{len(missing)}): {', '.join(sorted(missing))}")
+        print(f"  Отсутствуют в TSV ({len(missing)}): {', '.join(sorted(missing))}")
     if extra:
-        print(f"Processing details{len(extra)}): {', '.join(sorted(extra))}")
+        print(f"  Лишние в TSV ({len(extra)}): {', '.join(sorted(extra))}")
     if set_ok:
-        print(f"Validation status")
+        print(f"  Все ожидаемые аллели присутствуют, посторонних нет.")
     print(f"  ─────────────────────────────────────────────────────")
     return set_ok
 
@@ -279,7 +279,7 @@ def _format_sheet(ws, header_fill=None):
 
 
 def save_result_excel(sheets: dict, path: str):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of IEDB_I_Consensus_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     with pd.ExcelWriter(path, engine="openpyxl") as writer:
         for sheet_name, df in sheets.items():
             df.to_excel(writer, index=False, sheet_name=sheet_name)
@@ -293,8 +293,8 @@ def save_result_excel(sheets: dict, path: str):
 
     wb.save(path)
     total = sum(len(df) for name, df in sheets.items() if name != "Summary")
-    print(f"Saved output{os.path.basename(path)}  "
-          f"({len(sheets)-1}Processing details")
+    print(f"  Сохранено: {os.path.basename(path)}  "
+          f"({len(sheets)-1} листов с данными, Summary включён)")
 
 
 # ---------------------------------------------------------------------------
@@ -303,7 +303,7 @@ def save_result_excel(sheets: dict, path: str):
 
 
 def compute_per_threshold(pred_df: pd.DataFrame, validated_pairs: set, src: str) -> dict:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of IEDB_I_Consensus_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     score_cols = [col for col, _, _, _ in THRESHOLDS]
     results = {}
     union_mask = pd.Series(False, index=pred_df.index)
@@ -355,14 +355,14 @@ def build_summary(results: dict) -> pd.DataFrame:
 
 def process_antigen(name: str, tsv_path: str, xlsx_path: str, out_dir: str) -> bool:
     print(f"\n{'='*60}")
-    print(f"Processing details{name}")
+    print(f"Антиген: {name}")
     print(f"  TSV : {tsv_path}")
     print(f"  XLSX: {xlsx_path}")
 
     # Validation.
     for label, path in [("TSV", tsv_path), ("XLSX", xlsx_path)]:
         if not os.path.isfile(path):
-            print(f"Error{label}Required input or value was not found{path}")
+            print(f"  [ОШИБКА] {label}-файл не найден: {path}")
             return False
 
     # Implementation detail; see the repository documentation.
@@ -371,8 +371,8 @@ def process_antigen(name: str, tsv_path: str, xlsx_path: str, out_dir: str) -> b
     # Validation.
     critical, _ = check_tsv_structure(df_raw)
     if critical:
-        print(f"Error")
-        print(f"Processing details{name}Processing details")
+        print(f"\n  [ОШИБКА] Критические проблемы структуры TSV.")
+        print(f"  Выходные файлы для антигена {name} НЕ созданы.")
         return False
 
     # Normalization.
@@ -385,23 +385,23 @@ def process_antigen(name: str, tsv_path: str, xlsx_path: str, out_dir: str) -> b
 
     # Validation.
     tool_alleles = sorted(pred_df["allele"].dropna().unique().tolist())
-    print(f"Allele status{len(tool_alleles)}):")
+    print(f"\n  Аллели инструмента ({len(tool_alleles)}):")
     for a in tool_alleles:
         print(f"    {a}")
 
     if not check_alleles(name, tool_alleles):
-        print(f"Error")
-        print(f"Processing details{name}Processing details")
+        print(f"\n  [ОШИБКА] Набор аллелей не совпадает с ожидаемым.")
+        print(f"  Выходные файлы для антигена {name} НЕ созданы.")
         return False
 
     validated_pairs = load_validated(xlsx_path)
-    print(f"Processing details{len(validated_pairs)}")
-    print(f"Table status{len(pred_df)}")
+    print(f"\n  Валидированных пар: {len(validated_pairs)}")
+    print(f"  Строк в TSV (после дедупл.): {len(pred_df)}")
 
     os.makedirs(out_dir, exist_ok=True)
     src              = os.path.basename(tsv_path)
 
-    print(f"Processing details")
+    print(f"\n  ── Результаты по порогам ────────────────────────────")
     results = compute_per_threshold(pred_df, validated_pairs, src)
 
     summary_df = build_summary(results)
@@ -433,16 +433,16 @@ def main():
                 failed.append(antigen)
         except Exception as exc:
             import traceback
-            print(f"Processing details{antigen}: {exc}")
+            print(f"\n  [ИСКЛЮЧЕНИЕ] Антиген {antigen}: {exc}")
             traceback.print_exc()
             failed.append(antigen)
 
     print(f"\n{'='*60}")
     if failed:
-        print(f"Error{', '.join(failed)}")
+        print(f"Завершено с ошибками. Не обработаны: {', '.join(failed)}")
         sys.exit(1)
     else:
-        print("Processing status")
+        print("Все антигены обработаны успешно.")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+"""Portable implementation of donut_chart_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 from project_paths import DATA_ROOT
 
@@ -101,21 +101,21 @@ def guess_peptide_col(cols):
 
 def load_pairs_from_file(path):
     if not os.path.isfile(path):
-        raise FileNotFoundError(f"Required input or value was not found{path}")
+        raise FileNotFoundError(f"Не найден input-файл: {path}")
 
     try:
         xl = pd.ExcelFile(path)
         sheet = "Union_OR" if "Union_OR" in xl.sheet_names else xl.sheet_names[0]
         df = pd.read_excel(path, sheet_name=sheet, header=0)
     except Exception as e:
-        raise RuntimeError(f"Processing details{path}: {e}") from e
+        raise RuntimeError(f"Не удалось прочитать {path}: {e}") from e
 
     cols = list(df.columns)
     a_col = guess_allele_col(cols)
     p_col = guess_peptide_col(cols)
 
     if a_col is None or p_col is None:
-        raise ValueError(f"Required input or value was not found{path}: {cols}")
+        raise ValueError(f"Не найдены столбцы allele/peptide в {path}: {cols}")
 
     pairs = set()
     for _, row in df.iterrows():
@@ -133,13 +133,13 @@ def collect_tool_pairs(base_dir, antigen, tools_config):
         for folder, suffix in file_list:
             path = os.path.join(base_dir, folder, f"RM_{antigen}_{suffix}.xlsx")
             pairs |= load_pairs_from_file(path)  # Implementation detail; see the repository documentation.
-        print(f"  {tool_name}: {len(pairs)}Processing details")
+        print(f"  {tool_name}: {len(pairs)} уникальных RM-пар")
         tool_pairs[tool_name] = pairs
     return tool_pairs
 
 
 def compute_segments(tool_pairs):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of donut_chart_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     pair_count = defaultdict(int)
     for pairs in tool_pairs.values():
         for p in pairs:
@@ -147,7 +147,7 @@ def compute_segments(tool_pairs):
 
     total = len(pair_count)
     if total == 0:
-        print("Warning")
+        print("  [ПРЕДУПРЕЖДЕНИЕ] Нет данных.")
         return None, 0
 
     shared = {p for p, c in pair_count.items() if c >= 2}
@@ -163,24 +163,24 @@ def compute_segments(tool_pairs):
 
 
 def get_segments_for_antigen(antigen):
-    base = os.path.join(ROOT, f"Processing details{antigen}")
+    base = os.path.join(ROOT, f"{antigen}")
 
-    print(f"Processing details{antigen}")
+    print(f"\n[MHC I] Антиген: {antigen}")
     try:
         mhc_i_dir = os.path.join(base, "Matches MHC I")
         tool_pairs_I = collect_tool_pairs(mhc_i_dir, antigen, MHC_I_TOOLS)
         segments_I, total_I = compute_segments(tool_pairs_I)
     except Exception as e:
-        print(f"Error{antigen}: {e}")
+        print(f"  [ОШИБКА MHC I] {antigen}: {e}")
         segments_I, total_I = None, 0
 
-    print(f"Processing details{antigen}")
+    print(f"[MHC II] Антиген: {antigen}")
     try:
         mhc_ii_dir = os.path.join(base, "Matches MHC II")
         tool_pairs_II = collect_tool_pairs(mhc_ii_dir, antigen, MHC_II_TOOLS)
         segments_II, total_II = compute_segments(tool_pairs_II)
     except Exception as e:
-        print(f"Error{antigen}: {e}")
+        print(f"  [ОШИБКА MHC II] {antigen}: {e}")
         segments_II, total_II = None, 0
 
     return segments_I, total_I, segments_II, total_II
@@ -191,7 +191,7 @@ def get_segments_for_antigen(antigen):
 # ---------------------------------------------------------------------------
 
 def radius_clearing_center_box(angle_deg, half_w, half_h, min_r=0.0):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of donut_chart_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     rad = math.radians(angle_deg)
     cos_a, sin_a = math.cos(rad), math.sin(rad)
     candidates = [min_r]
@@ -207,12 +207,12 @@ def radius_clearing_center_box(angle_deg, half_w, half_h, min_r=0.0):
 
 
 def circular_diff(a, b):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of donut_chart_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     return (a - b + 180) % 360 - 180
 
 
 def spread_clustered_angles(angles, min_gap):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of donut_chart_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     n = len(angles)
     if n <= 1:
         return list(angles)
@@ -264,7 +264,7 @@ def spread_clustered_angles(angles, min_gap):
 
 
 def normalize_percentages(values, total, decimals=1):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of donut_chart_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if total <= 0 or not values:
         return [0.0 for _ in values]
     scale = 10 ** decimals
@@ -277,7 +277,7 @@ def normalize_percentages(values, total, decimals=1):
     for i in range(max(-remainder, 0)):
         floored[order[-(i + 1)]] -= 1
     if sum(floored) != 100 * scale:
-        raise ArithmeticError("Processing details")
+        raise ArithmeticError("Сумма отображаемых процентов не равна 100%")
     return [f / scale for f in floored]
 
 
@@ -289,7 +289,7 @@ def draw_donut_ax(ax, segments, total, colors, title, letter, label_overrides=No
     ax.set_aspect("equal", adjustable="box")
 
     if not segments or total <= 0:
-        ax.text(0.5, 0.5, "Processing details", transform=ax.transAxes,
+        ax.text(0.5, 0.5, "Нет данных", transform=ax.transAxes,
                 ha='center', va='center', fontsize=LABEL_FONTSIZE)
         ax.axis('off')
         return
@@ -439,7 +439,7 @@ PANEL_LABEL_OVERRIDES = {}
 # ---------------------------------------------------------------------------
 
 def render_combined_figure(data, out_path):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of donut_chart_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     width_in  = WIDTH_MM / 25.4
     height_in = HEIGHT_MM / 25.4
 
@@ -501,13 +501,13 @@ def main():
     data = {}
     for ag in ANTIGENS:
         print(f"\n{'='*50}")
-        print(f"Processing details{ag}")
+        print(f"Антиген: {ag}")
         data[ag] = get_segments_for_antigen(ag)
 
     out_path = os.path.join(OUT_DIR, "donut_coverage_all.png")
     render_combined_figure(data, out_path)
-    print(f"Saved output{out_path}")
-    print("Completed successfully")
+    print(f"\nСохранено: {out_path}")
+    print("Готово.")
 
 
 if __name__ == "__main__":

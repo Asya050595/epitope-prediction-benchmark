@@ -1,4 +1,4 @@
-"""English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+"""Portable implementation of IEDB_II_NetMHCIIpan_4_1_BA_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 from project_paths import DATA_ROOT
 
@@ -57,7 +57,7 @@ EXPECTED_ALLELES = {
 
 
 class AntigenSkipped(Exception):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of IEDB_II_NetMHCIIpan_4_1_BA_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 
 # Normalization.
@@ -74,39 +74,39 @@ def _normalize_dashes(s: str, raw_for_report) -> str:
     fixed = s
     for bad_char, repl in _DASH_LOOKALIKES.items():
         if bad_char in fixed:
-            print(f"Allele status{raw_for_report!r}Processing details"
-                  f"(U+{ord(bad_char):04X}Processing details")
+            print(f"    [INFO] В аллеле {raw_for_report!r} найден нестандартный дефис "
+                  f"(U+{ord(bad_char):04X}) — заменён на обычный '-'")
             fixed = fixed.replace(bad_char, repl)
     return fixed
 
 
 def normalize_allele(raw) -> str:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of IEDB_II_NetMHCIIpan_4_1_BA_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if raw is None:
-        raise ValueError("Required input or value was not found")
+        raise ValueError("аллель отсутствует (None)")
     s = str(raw).strip()
     if not s:
-        raise ValueError("Allele status")
+        raise ValueError("пустая строка вместо аллеля")
 
     s = _normalize_dashes(s, raw)
     s = re.sub(r'^HLA-', '', s, flags=re.IGNORECASE)
 
     m = re.match(r'^([A-Z]+\d)[\*_]?(\d{2})[:_]?(\d{2})$', s, flags=re.IGNORECASE)
     if not m:
-        raise ValueError(f"Allele status{raw!r}")
+        raise ValueError(f"не удалось распознать формат аллеля: {raw!r}")
 
     gene, group, protein = m.groups()
     return f"{gene.upper()}*{group}:{protein}"
 
 
 def normalize_alleles_column(series: pd.Series, label: str) -> tuple[pd.Series, list]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of IEDB_II_NetMHCIIpan_4_1_BA_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     normed, errors = [], []
     for i, raw in series.items():
         try:
             normed.append(normalize_allele(raw))
         except ValueError as exc:
-            errors.append(f"{label}Table status{i}: {exc}")
+            errors.append(f"{label}, строка {i}: {exc}")
             normed.append(None)
     return pd.Series(normed, index=series.index), errors
 
@@ -121,9 +121,9 @@ def load_experimental(excel_path: str) -> pd.DataFrame:
     df = pd.read_excel(excel_path, header=0)
     if EXCEL_ALLELE_COL not in df.columns or EXCEL_PEPTIDE_COL not in df.columns:
         raise AntigenSkipped(
-            f"Processing details{excel_path}Required input or value was not found"
-            f"'{EXCEL_ALLELE_COL}Processing details{EXCEL_PEPTIDE_COL}'. "
-            f"Table status{list(df.columns)}"
+            f"в файле '{excel_path}' не найдены колонки "
+            f"'{EXCEL_ALLELE_COL}' и/или '{EXCEL_PEPTIDE_COL}'. "
+            f"Найденные колонки: {list(df.columns)}"
         )
     htl = (
         df[[EXCEL_ALLELE_COL, EXCEL_PEPTIDE_COL]]
@@ -135,13 +135,13 @@ def load_experimental(excel_path: str) -> pd.DataFrame:
     allele_norm, errors = normalize_alleles_column(htl["allele_raw"], "Excel")
     if errors:
         raise AntigenSkipped(
-            "Allele status" + "\n      ".join(errors)
+            "не удалось нормализовать аллели из Excel:\n      " + "\n      ".join(errors)
         )
 
     htl["allele"]  = allele_norm
     htl["peptide"] = htl["peptide_raw"].apply(normalize_peptide)
     htl = htl[["allele", "peptide"]].drop_duplicates().reset_index(drop=True)
-    print(f"Processing details{len(htl)}")
+    print(f"  [Excel] Валидных HTL-пар: {len(htl)}")
     return htl
 
 
@@ -152,14 +152,14 @@ def load_predictions(tsv_path: str) -> pd.DataFrame:
     missing = [c for c in required if c not in df.columns]
     if missing:
         raise AntigenSkipped(
-            f"Required input or value was not found{missing}. "
-            f"Table status{list(df.columns)}"
+            f"в TSV отсутствуют обязательные колонки: {missing}. "
+            f"Доступные колонки: {list(df.columns)}"
         )
 
     allele_norm, errors = normalize_alleles_column(df["allele"], "TSV")
     if errors:
         raise AntigenSkipped(
-            "Allele status" + "\n      ".join(errors)
+            "не удалось нормализовать аллели из TSV:\n      " + "\n      ".join(errors)
         )
 
     df["allele_norm"] = allele_norm
@@ -169,7 +169,7 @@ def load_predictions(tsv_path: str) -> pd.DataFrame:
         df[col] = pd.to_numeric(df[col], errors="coerce")
         after_na = df[col].isna().sum()
         if after_na:
-            print(f"Table status{col}Processing details{after_na}")
+            print(f"  [TSV]   В колонке '{col}' NaN/нечисловых значений: {after_na}")
 
     # Metric calculation.
     # Implementation detail; see the repository documentation.
@@ -183,17 +183,17 @@ def load_predictions(tsv_path: str) -> pd.DataFrame:
     bad_required = [c for c in required_numeric if df[c].isna().any()]
     if bad_required:
         raise AntigenSkipped(
-            "Processing details" + ", ".join(sorted(bad_required))
+            "NaN/нечисловые значения в обязательных score columns: " + ", ".join(sorted(bad_required))
         )
 
-    print(f"Table status{len(df)}")
+    print(f"  [TSV]   Строк предсказаний: {len(df)}")
     return df
 
 
 # Validation.
 
 def validate_alleles(antigen: str, tool_alleles: set) -> None:
-    print(f"Allele status{len(tool_alleles)}):")
+    print(f"\n  Аллели инструмента ({len(tool_alleles)}):")
     for a in sorted(tool_alleles):
         print(f"    {a}")
 
@@ -202,16 +202,16 @@ def validate_alleles(antigen: str, tool_alleles: set) -> None:
     missing = expected - tool_alleles
 
     if len(tool_alleles) == len(expected) and not extra and not missing:
-        print(f"Validation status{len(tool_alleles)}")
-        print(f"Validation status")
+        print(f"\n  ✓ Количество аллелей совпадает: {len(tool_alleles)}")
+        print(f"  ✓ Состав аллелей полностью совпадает")
         return
 
-    print(f"Validation status{len(expected)}Processing details{len(tool_alleles)}")
+    print(f"\n  ✗ Ожидалось: {len(expected)}, найдено: {len(tool_alleles)}")
     if extra:
-        print(f"Processing details{len(extra)}): {', '.join(sorted(extra))}")
+        print(f"  ✗ Лишние ({len(extra)}): {', '.join(sorted(extra))}")
     if missing:
-        print(f"Required input or value was not found{len(missing)}): {', '.join(sorted(missing))}")
-    raise AntigenSkipped("Validation status")
+        print(f"  ✗ Отсутствуют ({len(missing)}): {', '.join(sorted(missing))}")
+    raise AntigenSkipped("проверка аллелей не пройдена")
 
 
 # ═══════════════════════════════ RM / UP ═══════════════════════════════
@@ -221,12 +221,12 @@ def make_mask(df_pred: pd.DataFrame, col: str, op: str, value: float) -> pd.Seri
         return df_pred[col] <= value
     if op == "lt":
         return df_pred[col] < value
-    raise ValueError(f"Processing details{op}")
+    raise ValueError(f"неизвестный оператор порога: {op}")
 
 
 
 def build_rm_up(df_passed: pd.DataFrame, exp_set: set, src: str):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of IEDB_II_NetMHCIIpan_4_1_BA_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if df_passed.empty:
         cols = ["allele", "peptide"] + SCORE_COLS + ["source_file"]
         empty = pd.DataFrame(columns=cols)
@@ -262,7 +262,7 @@ def build_rm_up(df_passed: pd.DataFrame, exp_set: set, src: str):
 def get_output_dir(antigen: str) -> str:
     return os.path.join(
         BASE,
-        f"Processing details{antigen}",
+        f"{antigen}",
         "Matches MHC II",
         f"Matches {TOOL_NAME}",
     )
@@ -279,13 +279,13 @@ def save_multisheet(sheets: dict, path: str) -> None:
 
 def process_antigen(antigen: str, paths: dict) -> bool:
     print(f"\n{'='*60}")
-    print(f"Processing details{antigen}")
+    print(f"  Антиген: {antigen}")
     print(f"{'='*60}")
 
     try:
         for key in ("tsv", "excel"):
             if not os.path.isfile(paths[key]):
-                raise AntigenSkipped(f"Required input or value was not found{paths[key]}")
+                raise AntigenSkipped(f"файл не найден: {paths[key]}")
 
         df_exp  = load_experimental(paths["excel"])
         df_pred = load_predictions(paths["tsv"])
@@ -307,48 +307,48 @@ def process_antigen(antigen: str, paths: dict) -> bool:
             rm_df, up_df = build_rm_up(df_passed, exp_set, src)
             sheets_rm[sheet_name] = rm_df
             sheets_up[sheet_name] = up_df
-            print(f"  [{sheet_name}Processing details{len(df_passed)}  |  RM: {len(rm_df)}, UP: {len(up_df)}")
+            print(f"  [{sheet_name}] прошли порог: {len(df_passed)}  |  RM: {len(rm_df)}, UP: {len(up_df)}")
 
         df_passed_union = df_pred[union_mask]
         rm_df, up_df = build_rm_up(df_passed_union, exp_set, src)
         sheets_rm["Union_OR"] = rm_df
         sheets_up["Union_OR"] = up_df
-        print(f"Processing details{len(df_passed_union)}  |  RM: {len(rm_df)}, UP: {len(up_df)}")
+        print(f"  [Union_OR] прошли хотя бы один порог: {len(df_passed_union)}  |  RM: {len(rm_df)}, UP: {len(up_df)}")
 
         out_dir = get_output_dir(antigen)
         save_multisheet(sheets_rm, os.path.join(out_dir, f"RM_{antigen}_{TOOL_NAME}.xlsx"))
         save_multisheet(sheets_up, os.path.join(out_dir, f"UP_{antigen}_{TOOL_NAME}.xlsx"))
-        print(f"Saved output{out_dir}")
+        print(f"\n  Сохранено в: {out_dir}")
         return True
 
     except AntigenSkipped as exc:
         print(f"\n  [ERROR] {exc}")
-        print(f"Processing details{antigen}Processing details")
+        print(f"  Антиген {antigen} пропущен, выходные файлы не созданы.")
         return False
 
 
 # ═══════════════════════════════ MAIN ═══════════════════════════════
 
 def main():
-    print("Validation status")
-    print("Processing details")
-    print("Processing details", ", ".join(ANTIGENS.keys()))
+    print("IEDB II NetMHCIIpan 4.1 BA — поиск совпадений (MHC class II)")
+    print("Пороги: Median_percentile_lte10, IC50_BA_lt5000, Union_OR")
+    print("Антигены:", ", ".join(ANTIGENS.keys()))
 
     results = {}
     for antigen, paths in ANTIGENS.items():
         try:
             results[antigen] = process_antigen(antigen, paths)
         except Exception as exc:  # Error handling.
-            print(f"Error{antigen}: {exc}")
+            print(f"\n  [НЕОЖИДАННАЯ ОШИБКА] Антиген {antigen}: {exc}")
             results[antigen] = False
 
     ok     = [a for a, s in results.items() if s]
     failed = [a for a, s in results.items() if not s]
 
     print(f"\n{'='*60}")
-    print(f"Processing status{len(ok)}/{len(ANTIGENS)} ({', '.join(ok) if ok else '—'})")
+    print(f"  Успешно обработано: {len(ok)}/{len(ANTIGENS)} ({', '.join(ok) if ok else '—'})")
     if failed:
-        print(f"Error{len(failed)}/{len(ANTIGENS)} ({', '.join(failed)})")
+        print(f"  Пропущено с ошибкой: {len(failed)}/{len(ANTIGENS)} ({', '.join(failed)})")
     print(f"{'='*60}\n")
 
     if failed:

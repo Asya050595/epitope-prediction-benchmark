@@ -76,7 +76,7 @@ MODE_LABELS = {
 
 def get_output_dir(antigen: str) -> str:
     return os.path.join(
-        BASE, f"Processing details{antigen}",
+        BASE, f"{antigen}",
         "Matches MHC II", f"Matches {TOOL_NAME}",
     )
 
@@ -126,7 +126,7 @@ def parse_html_predictions(html_path: str) -> list[dict]:
                     "source_file": os.path.basename(html_path),
                 })
     except FileNotFoundError:
-        print(f"Required input or value was not found{html_path}")
+        print(f"  [ПРЕДУПРЕЖДЕНИЕ] Файл не найден: {html_path}")
     return records
 
 
@@ -136,7 +136,7 @@ def normalize_std_allele(raw: str) -> str:
     s = str(raw).strip().upper().replace("HLA-", "")
     m = re.match(r'^([A-Z]+\d)[*_]?(\d{2})[:_]?(\d{2})$', s)
     if not m:
-        raise ValueError(f"Processing details{raw!r}")
+        raise ValueError(f"Не удалось распознать HLA II allele: {raw!r}")
     return f"{m.group(1)}*{m.group(2)}:{m.group(3)}"
 
 
@@ -145,12 +145,12 @@ def load_validated_htl(excel_path: str) -> set[tuple[str, str]]:
     allele_col, peptide_col = "HLA allele.1", "HTL epitopes"
     missing = [c for c in (allele_col, peptide_col) if c not in df.columns]
     if missing:
-        raise ValueError(f"Processing details{excel_path}Required input or value was not found{missing}")
+        raise ValueError(f"В {excel_path} отсутствуют колонки: {missing}")
     pairs = set()
     for _, row in df[[allele_col, peptide_col]].dropna().iterrows():
         pairs.add((normalize_std_allele(row[allele_col]), str(row[peptide_col]).strip().upper()))
     if not pairs:
-        raise ValueError(f"Processing details{excel_path}Processing details")
+        raise ValueError(f"В {excel_path} нет reference HTL pairs")
     return pairs
 
 
@@ -158,10 +158,10 @@ def validate_alleles(antigen_name: str, found_std: set[str]) -> None:
     expected_std = {html_allele_to_std(a) for a in EXPECTED_ALLELES[antigen_name]}
     missing, extra = expected_std - found_std, found_std - expected_std
     print(f"\n  Prediction alleles: expected={len(expected_std)}, found={len(found_std)}")
-    if missing: print(f"Required input or value was not found{', '.join(sorted(missing))}")
-    if extra: print(f"Processing details{', '.join(sorted(extra))}")
+    if missing: print(f"    отсутствуют: {', '.join(sorted(missing))}")
+    if extra: print(f"    лишние: {', '.join(sorted(extra))}")
     if missing or extra:
-        raise ValueError("Validation status")
+        raise ValueError("Состав prediction alleles не совпадает с фактическим набором запуска")
 
 
 def aggregate_predictions(all_records: list[dict]) -> pd.DataFrame:
@@ -197,7 +197,7 @@ def save_excel_multi(sheets: dict[str, pd.DataFrame], path: str) -> None:
         for sheet_name, df in sheets.items():
             df.to_excel(writer, sheet_name=sheet_name, index=False)
     row_counts = ", ".join(f"{name}={len(df)}" for name, df in sheets.items())
-    print(f"Saved output{path}\n    ({row_counts})")
+    print(f"  Сохранено: {path}\n    ({row_counts})")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -205,42 +205,42 @@ def save_excel_multi(sheets: dict[str, pd.DataFrame], path: str) -> None:
 
 
 def process_antigen(antigen_name: str, cfg: dict) -> str:
-    print(f"\n{'='*60}Processing details{antigen_name}\n{'='*60}")
-    if not os.path.isfile(cfg["excel"]): return "Required input or value was not found"
+    print(f"\n{'='*60}\n  Антиген: {antigen_name}\n{'='*60}")
+    if not os.path.isfile(cfg["excel"]): return "ошибка — reference Excel не найден"
     html_files=sorted(glob.glob(cfg["html_glob"]))
-    if not html_files: return "Required input or value was not found"
+    if not html_files: return "ошибка — HTML-файлы не найдены"
     validated_set=load_validated_htl(cfg["excel"])
     all_records=[]
     for html_file in html_files:
         recs=parse_html_predictions(html_file)
-        if not recs: raise ValueError(f"Processing details{html_file}")
+        if not recs: raise ValueError(f"Не удалось разобрать prediction rows из {html_file}")
         all_records.extend(recs)
     validate_alleles(antigen_name,{r["allele_std"] for r in all_records})
     pred_df=aggregate_predictions(all_records)
     results={m:build_mode_frames(m,pred_df,validated_set) for m in MODES}
-    print(f"\n  {'Mode':<18}{'RM':>8}{'UP':>10}")
+    print(f"\n  {'Режим':<18}{'RM':>8}{'UP':>10}")
     for m in MODES: print(f"  {MODE_LABELS[m]:<18}{len(results[m]['rm_pairs']):>8}{len(results[m]['up_pairs']):>10}")
     out_dir=get_output_dir(antigen_name)
     for kind,key in (("RM","rm_df"),("UP","up_df")):
         save_excel_multi({MODE_SHEET_NAMES[m]:results[m][key] for m in MODES},os.path.join(out_dir,f"{kind}_{antigen_name}_{TOOL_NAME}.xlsx"))
-    return "success"
+    return "успешно"
 
 
 def main():
     statuses={}
     for antigen,cfg in ANTIGENS.items():
         try: statuses[antigen]=process_antigen(antigen,cfg)
-        except Exception as exc: print(f"Error{antigen}: {exc}"); statuses[antigen]=f"Error{exc}"
+        except Exception as exc: print(f"[ОШИБКА] {antigen}: {exc}"); statuses[antigen]=f"ошибка — {exc}"
     for a,s in statuses.items(): print(f"{a}: {s}")
-    if any(s!="success" for s in statuses.values()): raise SystemExit(1)
+    if any(s!="успешно" for s in statuses.values()): raise SystemExit(1)
 
 
 if __name__ == "__main__":
-    print("Validation status")
-    print(f"Processing details{RANK_THRESHOLD:g} / Affinity < {AFFINITY_THRESHOLD:g} nM) "
-          f"Processing details")
+    print("NetMHC II 2.3 — поиск совпадений с валидированными HTL-эпитопами")
+    print(f"Пороги считаются отдельно (%Rank <= {RANK_THRESHOLD:g} / Affinity < {AFFINITY_THRESHOLD:g} nM) "
+          f"и как объединение (Union OR)\n")
 
     for antigen, cfg in ANTIGENS.items():
         process_antigen(antigen, cfg)
 
-    print("Completed successfully")
+    print("\nГотово.")

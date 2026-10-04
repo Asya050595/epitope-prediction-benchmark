@@ -101,7 +101,7 @@ EXPECTED_ALLELES = {
 
 def get_output_dir(antigen: str) -> str:
     return os.path.join(
-        BASE, f"Processing details{antigen}",
+        BASE, f"{antigen}",
         "Matches MHC II", f"Matches {TOOL_NAME}",
     )
 
@@ -113,7 +113,7 @@ def normalize_str(s: str) -> str:
 
 
 def raw_allele_to_standard(raw: str) -> str:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of NetMHCIIpan_4_1_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     raw = raw.strip()
     m = re.match(r'^((?:HLA-)?[A-Z]+\d*)[_*](\d{2})(\d{2})$', raw)
     if m:
@@ -135,14 +135,14 @@ def normalize_allele(allele: str) -> str:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def is_binary_excel(fpath: str) -> bool:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of NetMHCIIpan_4_1_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     with open(fpath, "rb") as fh:
         head = fh.read(8)
     return head.startswith(b"\xD0\xCF\x11\xE0") or head.startswith(b"PK\x03\x04")
 
 
 def find_header_row_index(lines: list[str], max_scan: int = 10) -> Optional[int]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of NetMHCIIpan_4_1_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     for i, line in enumerate(lines[:max_scan]):
         first_cell = line.split("\t", 1)[0].strip()
         if first_cell == "Pos":
@@ -161,13 +161,13 @@ def _empty_parse_stats() -> dict:
 
 
 def parse_xls_file(fpath: str) -> tuple[pd.DataFrame, dict]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of NetMHCIIpan_4_1_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     fname = os.path.basename(fpath)
 
     if is_binary_excel(fpath):
-        print(f"Error{fname}Processing details"
-              f"Processing details"
-              f"Processing details")
+        print(f"    ОШИБКА: {fname} — это настоящий бинарный Excel-файл, а не "
+              f"текстовый tab-separated .xls. Такой формат этот скрипт пока не "
+              f"поддерживает — пришли пример, чтобы добавить его разбор.")
         return pd.DataFrame(), _empty_parse_stats()
 
     with open(fpath, "r", encoding="utf-8", errors="replace") as fh:
@@ -175,11 +175,11 @@ def parse_xls_file(fpath: str) -> tuple[pd.DataFrame, dict]:
 
     header_idx = find_header_row_index(lines)
     if header_idx is None:
-        print(f"Required input or value was not found{fname}")
+        print(f"    ПРЕДУПРЕЖДЕНИЕ: строка заголовков ('Pos') не найдена в {fname}")
         return pd.DataFrame(), _empty_parse_stats()
     if header_idx == 0:
-        print(f"Warning"
-              f"Allele status{fname}")
+        print(f"    ПРЕДУПРЕЖДЕНИЕ: над строкой заголовков нет строки с именами "
+              f"аллелей в {fname}")
         return pd.DataFrame(), _empty_parse_stats()
 
     allele_row = lines[header_idx - 1].rstrip("\n").split("\t")
@@ -188,8 +188,8 @@ def parse_xls_file(fpath: str) -> tuple[pd.DataFrame, dict]:
     # Allele handling.
     block_starts = [i for i, v in enumerate(header_row) if v == "Core"]
     if not block_starts:
-        print(f"Required input or value was not found"
-              f"Table status{fname}")
+        print(f"    ПРЕДУПРЕЖДЕНИЕ: не найдено ни одного блока аллеля "
+              f"(колонка 'Core') в {fname}")
         return pd.DataFrame(), _empty_parse_stats()
 
     try:
@@ -202,8 +202,8 @@ def parse_xls_file(fpath: str) -> tuple[pd.DataFrame, dict]:
     for start, end in zip(block_starts, block_ends):
         allele_raw = allele_row[start].strip() if start < len(allele_row) else ""
         if not allele_raw:
-            print(f"Warning"
-                  f"{start} ({fname}Processing details")
+            print(f"    ПРЕДУПРЕЖДЕНИЕ: пустое имя аллеля для блока в колонке "
+                  f"{start} ({fname}) — блок пропущен")
             continue
         sub_headers = header_row[start:end]
         try:
@@ -211,8 +211,8 @@ def parse_xls_file(fpath: str) -> tuple[pd.DataFrame, dict]:
             rank_ba_idx = start + sub_headers.index("Rank_BA")
             afin_idx    = start + sub_headers.index("nM")
         except ValueError:
-            print(f"Warning"
-                  f"{allele_raw} ({sub_headers}Processing details{fname}Processing details")
+            print(f"    ПРЕДУПРЕЖДЕНИЕ: неожиданная структура блока для аллеля "
+                  f"{allele_raw} ({sub_headers}) в {fname} — блок пропущен")
             continue
         blocks.append({
             "allele_raw":  allele_raw,
@@ -223,7 +223,7 @@ def parse_xls_file(fpath: str) -> tuple[pd.DataFrame, dict]:
         })
 
     if not blocks:
-        print(f"Warning{fname}")
+        print(f"    ПРЕДУПРЕЖДЕНИЕ: ни один блок аллеля не удалось разобрать в {fname}")
         return pd.DataFrame(), _empty_parse_stats()
 
     def to_float(s: str) -> float:
@@ -284,33 +284,33 @@ def parse_xls_file(fpath: str) -> tuple[pd.DataFrame, dict]:
 
 
 def parse_xls_files(xls_paths: list[str]) -> tuple[pd.DataFrame, dict]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of NetMHCIIpan_4_1_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     dfs = []
     file_stats = {}
     for fpath in xls_paths:
-        print(f"Processing details{os.path.basename(fpath)}")
+        print(f"  Парсинг xls: {os.path.basename(fpath)}")
         df, stats = parse_xls_file(fpath)
         fname = os.path.basename(fpath)
         file_stats[fname] = stats
         if df.empty:
-            print(f"Warning{fname}")
+            print(f"    ПРЕДУПРЕЖДЕНИЕ: строки не извлечены из {fname}")
         else:
-            print(f"Table status{len(df):,}Allele status{df['Allele_raw'].nunique()}")
+            print(f"    строк: {len(df):,}   аллелей в файле: {df['Allele_raw'].nunique()}")
         dfs.append(df)
 
     non_empty = [d for d in dfs if not d.empty]
     if not non_empty:
-        print("Required input or value was not found")
+        print("  ПРЕДУПРЕЖДЕНИЕ: предсказания не найдены ни в одном xls-файле!")
         return pd.DataFrame(), file_stats
 
     df_all = pd.concat(non_empty, ignore_index=True)
-    print(f"Table status{len(df_all):,}")
+    print(f"  Загружено строк предсказания (всего по антигену): {len(df_all):,}")
     return df_all, file_stats
 
 
 def check_parse_integrity(antigen_name: str, file_stats: dict) -> bool:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
-    print(f"Validation status{antigen_name} ---")
+    """Portable implementation of NetMHCIIpan_4_1_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
+    print(f"\n  --- Проверка целостности разбора xls для {antigen_name} ---")
     ok = True
     peptide_lists = {}
 
@@ -318,25 +318,25 @@ def check_parse_integrity(antigen_name: str, file_stats: dict) -> bool:
         print(f"  [{fname}]")
         if stats["corrupted_rows"] > 0:
             ok = False
-            print(f"Table status{stats['corrupted_rows']}")
+            print(f"    ✗ повреждённых строк (Pos/Peptide не распознаны): {stats['corrupted_rows']}")
         if stats["truncated_blocks"] > 0:
             ok = False
-            print(f"Allele status{stats['truncated_blocks']}")
+            print(f"    ✗ обрезанных блоков аллель×строка (не хватает колонок): {stats['truncated_blocks']}")
         nan_total = sum(stats["nan_counts"].values())
         if nan_total > 0:
             ok = False
-            print(f"Processing details{stats['nan_counts']}")
+            print(f"    ✗ NaN в метриках: {stats['nan_counts']}")
 
         rpa = stats["rows_per_allele"]
         counts = set(rpa.values())
         if len(counts) > 1:
             ok = False
-            print(f"Allele status{rpa}")
+            print(f"    ✗ число строк по аллелям внутри файла НЕ одинаково: {rpa}")
         elif rpa:
             n = next(iter(counts))
-            print(f"Allele status{n}Processing details{len(rpa)}Allele status")
+            print(f"    ✓ строк на аллель: {n} (одинаково для всех {len(rpa)} аллелей файла)")
 
-        print(f"Loaded input{len(stats['peptide_rows'])}")
+        print(f"    строк данных прочитано: {len(stats['peptide_rows'])}")
         peptide_lists[fname] = stats["peptide_rows"]
 
     if len(peptide_lists) > 1:
@@ -348,16 +348,16 @@ def check_parse_integrity(antigen_name: str, file_stats: dict) -> bool:
             if other_list != base_list:
                 ok = False
                 mismatch_found = True
-                print(f"Peptide status{base_name}Processing details"
-                      f"{other_name}Validation status{len(base_list)}Processing details"
-                      f"{len(other_list)}Table status")
+                print(f"    ✗ последовательности пептидных строк в {base_name} и "
+                      f"{other_name} НЕ совпадают: {len(base_list)} против "
+                      f"{len(other_list)} строк")
 
                 first_diff = next(
                     (i for i, (a, b) in enumerate(zip(base_list, other_list)) if a != b),
                     None,
                 )
                 if first_diff is not None:
-                    print(f"Processing details{first_diff}: "
+                    print(f"        первое расхождение на позиции {first_diff}: "
                           f"'{base_list[first_diff]}' ({base_name}) vs "
                           f"'{other_list[first_diff]}' ({other_name})")
 
@@ -369,12 +369,12 @@ def check_parse_integrity(antigen_name: str, file_stats: dict) -> bool:
                 }
                 if dup_diffs:
                     sample = sorted(dup_diffs.items())[:5]
-                    tail = f" (+{len(dup_diffs) - 5}Processing details" if len(dup_diffs) > 5 else ""
-                    print(f"Peptide status"
-                          f"Peptide status{base_name}], [{other_name}]): {sample}{tail}")
+                    tail = f" (+{len(dup_diffs) - 5} ещё)" if len(dup_diffs) > 5 else ""
+                    print(f"        пептиды с разным числом повторов "
+                          f"(пептид: [{base_name}], [{other_name}]): {sample}{tail}")
         if not mismatch_found:
-            print(f"Validation status"
-                  f"{len(names)}Processing details{len(base_list)}Table status")
+            print(f"    ✓ последовательности пептидных строк совпадают между "
+                  f"{len(names)} файлами ({len(base_list)} строк, включая дубли)")
 
     print(f"  {'-'*56}")
     return ok
@@ -393,8 +393,8 @@ def validate_alleles(antigen_name: str, pred_all: pd.DataFrame) -> bool:
     missing,extra=sorted(expected-found),sorted(found-expected)
     duplicated={a:sorted(files) for a,files in by_file.items() if a in expected and len(files)>1}
     print(f"\n  Prediction allele check [{antigen_name}]: expected={len(expected)}, found={len(found)}")
-    if missing: print(f"Required input or value was not found{', '.join(missing)}")
-    if extra: print(f"Processing details{', '.join(extra)}")
+    if missing: print(f"    отсутствуют: {', '.join(missing)}")
+    if extra: print(f"    лишние: {', '.join(extra)}")
     if duplicated:
         for a,files in duplicated.items(): print(f"    duplicate {a}: {', '.join(files)}")
     return not missing and not extra and not duplicated
@@ -410,7 +410,7 @@ def read_validated_epitopes(excel_path: str) -> pd.DataFrame:
     df_raw=pd.read_excel(excel_path,sheet_name=0,header=0)
     allele_col,peptide_col="HLA allele.1","HTL epitopes"
     missing=[c for c in (allele_col,peptide_col) if c not in df_raw.columns]
-    if missing: raise ValueError(f"Processing details{excel_path}Required input or value was not found{missing}")
+    if missing: raise ValueError(f"В {excel_path} отсутствуют колонки: {missing}")
     rows=[]
     for _,row in df_raw[[allele_col,peptide_col]].dropna().iterrows():
         allele=normalize_allele(str(row[allele_col])); peptide=normalize_str(str(row[peptide_col])).upper()
@@ -443,7 +443,7 @@ def get_mode_mask(mode: str, df: pd.DataFrame) -> pd.Series:
 
 
 def _union_flags_vectorized(df: pd.DataFrame) -> pd.DataFrame:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of NetMHCIIpan_4_1_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     out = pd.DataFrame(index=df.index)
     flag_cols = []
     for thr_key, colname in (("rank_el", "Pass_Rank_EL"),
@@ -493,7 +493,7 @@ def save_excel_multi(sheets: dict[str, pd.DataFrame], path: str) -> None:
         for sheet_name, df in sheets.items():
             df.to_excel(writer, sheet_name=sheet_name, index=False)
     row_counts = ", ".join(f"{name}={len(df)}" for name, df in sheets.items())
-    print(f"Saved output{path}\n    ({row_counts})")
+    print(f"  Сохранено: {path}\n    ({row_counts})")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -503,49 +503,49 @@ def save_excel_multi(sheets: dict[str, pd.DataFrame], path: str) -> None:
 
 
 def process_antigen(antigen_name: str, config: dict) -> str:
-    print(f"\n{'='*60}Processing status{antigen_name}\n{'='*60}")
+    print(f"\n{'='*60}\nОбработка антигена: {antigen_name}\n{'='*60}")
     xls_files=config.get("xls_files") or []
-    if not xls_files: return "Processing details"
+    if not xls_files: return "остановлен — xls_files не заполнен"
     missing=[f for f in xls_files if not os.path.isfile(f)]
-    if missing: return "Required input or value was not found"
-    if not os.path.isfile(config["excel"]): return "Required input or value was not found"
+    if missing: return "остановлен — xls-файлы не найдены"
+    if not os.path.isfile(config["excel"]): return "остановлен — reference Excel не найден"
     pred_all,file_stats=parse_xls_files(xls_files)
     validated=read_validated_epitopes(config["excel"])
-    if pred_all.empty or validated.empty: return "Processing details"
-    if not check_parse_integrity(antigen_name,file_stats): return "Processing details"
-    if not validate_alleles(antigen_name,pred_all): return "Processing details"
+    if pred_all.empty or validated.empty: return "остановлен — пустые входные данные"
+    if not check_parse_integrity(antigen_name,file_stats): return "остановлен — целостность разбора xls нарушена"
+    if not validate_alleles(antigen_name,pred_all): return "остановлен — несоответствие prediction alleles"
     val_set=set(zip(validated["Allele"],validated["Peptide"]))
     results={m:build_mode_frames(m,pred_all,val_set) for m in MODES}
-    print(f"\n  {'Mode':<18}{'RM':>8}{'UP':>10}")
+    print(f"\n  {'Режим':<18}{'RM':>8}{'UP':>10}")
     for m in MODES: print(f"  {MODE_LABELS[m]:<18}{len(results[m]['rm_pairs']):>8}{len(results[m]['up_pairs']):>10}")
     out_dir=get_output_dir(antigen_name)
     for kind,key in (("RM","rm_df"),("UP","up_df")):
         save_excel_multi({MODE_SHEET_NAMES[m]:results[m][key] for m in MODES},os.path.join(out_dir,f"{kind}_{antigen_name}_{TOOL_NAME}.xlsx"))
-    return "success"
+    return "успешно"
 
 
 def main():
-    print("Validation status")
-    print("Processing details"
-          "Processing details")
+    print("NetMHCIIpan 4.1 — поиск совпадений с валидированными HTL эпитопами")
+    print("Пороги считаются отдельно (%Rank_EL <= 10 / %Rank_BA <= 10 / "
+          "Affinity < 5000 nM) и как объединение (Union OR)\n")
 
     statuses = {}
     for antigen_name, config in ANTIGENS.items():
         statuses[antigen_name] = process_antigen(antigen_name, config)
 
     print(f"\n{'='*60}")
-    print("Processing details")
+    print("Итог по антигенам:")
     any_error = False
     for antigen_name, status in statuses.items():
-        ok = (status == "success")
+        ok = (status == "успешно")
         any_error = any_error or not ok
         print(f"  {'✓' if ok else '✗'} {antigen_name}: {status}")
 
     print()
     if any_error:
-        print("Error")
+        print("Завершено с ошибками. Проверь сообщения выше.")
     else:
-        print("Processing status")
+        print("Готово! Все антигены обработаны успешно.")
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ message: "If you use this software, please cite the associated article and this 
 title: "Epitope prediction benchmark"
 type: software
 authors:
-  - name: "Asya050595"
+  - family-names: "Arutiunova"
+    given-names: "Araksia"
 repository-code: "https://github.com/Asya050595/epitope-prediction-benchmark"
 license: MIT
-

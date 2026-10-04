@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+"""Portable implementation of micro_macro_recovery. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ REFERENCE_FILES = {
 # ---------------------------------------------------------------------------
 
 def build_tool_paths(mhc_class: str, antigen: str) -> dict[str, list[Path]]:
-    base = ROOT / f"Processing details{antigen}"
+    base = ROOT / f"{antigen}"
     if mhc_class == "I":
         matches = base / "Matches MHC I"
         return {
@@ -92,7 +92,7 @@ def build_tool_paths(mhc_class: str, antigen: str) -> dict[str, list[Path]]:
             ],
         }
 
-    raise ValueError(f"Processing details{mhc_class!r}")
+    raise ValueError(f"Неизвестный класс HLA: {mhc_class!r}")
 
 
 # ---------------------------------------------------------------------------
@@ -104,7 +104,7 @@ def find_allele_sets_file() -> Path:
     if explicit:
         path = Path(explicit).expanduser()
         if not path.is_file():
-            raise FileNotFoundError(f"Required input or value was not found{path}")
+            raise FileNotFoundError(f"ALLELE_SETS_PATH не найден: {path}")
         return path
 
     candidates = [
@@ -118,8 +118,8 @@ def find_allele_sets_file() -> Path:
     found = [path for path in candidates if path.is_file()]
     if not found:
         raise FileNotFoundError(
-            "Required input or value was not found"
-            "Processing details"
+            "Не найден allele_sets.py. Поместите его рядом со скриптом или "
+            "задайте полный путь в ALLELE_SETS_PATH."
         )
     return found[0]
 
@@ -128,14 +128,14 @@ def load_evaluable_sets() -> dict[str, dict[str, set[str]]]:
     path = find_allele_sets_file()
     spec = importlib.util.spec_from_file_location("micro_macro_allele_sets", path)
     if spec is None or spec.loader is None:
-        raise ImportError(f"Processing details{path}")
+        raise ImportError(f"Не удалось импортировать {path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
     required = ("EVALUABLE_SET_MHC_I", "EVALUABLE_SET_MHC_II")
     missing = [name for name in required if not hasattr(module, name)]
     if missing:
-        raise AttributeError(f"Processing details{path}Required input or value was not found{missing}")
+        raise AttributeError(f"В {path} отсутствуют объекты: {missing}")
 
     return {
         "I": {
@@ -178,7 +178,7 @@ def normalize_peptide(value: object) -> str:
 
 
 def normalize_allele(value: object) -> str:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of micro_macro_recovery. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if pd.isna(value):
         return ""
     raw = str(value).strip().upper()
@@ -204,9 +204,9 @@ def load_reference_pairs(
     path: Path,
     mhc_class: str,
 ) -> set[tuple[str, str]]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of micro_macro_recovery. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if not path.is_file():
-        raise FileNotFoundError(f"Required input or value was not found{path}")
+        raise FileNotFoundError(f"Не найден reference dataset: {path}")
 
     df = pd.read_excel(path, sheet_name=0)
     expected_columns = {
@@ -216,15 +216,15 @@ def load_reference_pairs(
     try:
         allele_col, peptide_col = expected_columns[mhc_class]
     except KeyError as exc:
-        raise ValueError(f"Processing details{mhc_class!r}") from exc
+        raise ValueError(f"Неизвестный класс HLA: {mhc_class!r}") from exc
 
     missing_columns = [
         column for column in (allele_col, peptide_col) if column not in df.columns
     ]
     if missing_columns:
         raise ValueError(
-            f"Processing details{path}Required input or value was not found{missing_columns}. "
-            f"Processing details{list(df.columns)}"
+            f"В {path} отсутствуют столбцы {missing_columns}. "
+            f"Доступные столбцы: {list(df.columns)}"
         )
 
     pairs = {
@@ -234,14 +234,14 @@ def load_reference_pairs(
     }
     if not pairs:
         raise ValueError(
-            f"Processing details{path}Required input or value was not found{mhc_class}"
+            f"В {path} не найдено reference pairs для HLA class {mhc_class}"
         )
     return pairs
 
 
 def read_pairs_from_excel(path: Path) -> set[tuple[str, str]]:
     if not path.is_file():
-        raise FileNotFoundError(f"Required input or value was not found{path}")
+        raise FileNotFoundError(f"Не найден RM-файл: {path}")
     excel = pd.ExcelFile(path)
     sheet = "Union_OR" if "Union_OR" in excel.sheet_names else excel.sheet_names[0]
     df = pd.read_excel(path, sheet_name=sheet)
@@ -249,8 +249,8 @@ def read_pairs_from_excel(path: Path) -> set[tuple[str, str]]:
     peptide_col = find_column(df.columns, PEPTIDE_ALIASES)
     if allele_col is None or peptide_col is None:
         raise ValueError(
-            f"Processing details{path}Processing details{sheet}Required input or value was not found"
-            f"Processing details{list(df.columns)}"
+            f"В {path} (лист {sheet}) не найдены столбцы Allele/Peptide. "
+            f"Доступные столбцы: {list(df.columns)}"
         )
     return {
         (normalize_allele(a), normalize_peptide(p))
@@ -279,7 +279,7 @@ def calculate_recovery(
         pair for pair in reference_pairs if pair[0] in evaluable_alleles
     }
     if not evaluable_reference:
-        raise ValueError("Processing details")
+        raise ValueError("После фильтрации по evaluable alleles reference set пуст")
 
     # Implementation detail; see the repository documentation.
     # Implementation detail; see the repository documentation.
@@ -296,7 +296,7 @@ def calculate_recovery(
     absent_alleles = sorted(evaluable_alleles - set(represented_alleles))
     if absent_alleles:
         raise ValueError(
-            "Allele status"
+            "В evaluable allele set есть аллели без reference pairs: "
             + ", ".join(absent_alleles)
         )
     allele_rows: list[dict[str, object]] = []
@@ -381,7 +381,7 @@ def write_excel(summary: pd.DataFrame, allele_detail: pd.DataFrame) -> None:
         from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
         from openpyxl.utils import get_column_letter
     except ImportError as exc:
-        raise RuntimeError("Processing details") from exc
+        raise RuntimeError("Для экспорта требуется openpyxl") from exc
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     workbook = Workbook()
@@ -444,8 +444,8 @@ def write_excel(summary: pd.DataFrame, allele_detail: pd.DataFrame) -> None:
                 ]
                 if len(selected) != 1:
                     raise RuntimeError(
-                        f"Validation status{mhc_class}, {antigen}, {tool}; "
-                        f"Processing details{len(selected)}"
+                        f"Ожидалась одна строка: HLA {mhc_class}, {antigen}, {tool}; "
+                        f"получено {len(selected)}"
                     )
                 record = selected.iloc[0]
                 start_col = 2 + index * 2
@@ -526,7 +526,7 @@ def write_excel(summary: pd.DataFrame, allele_detail: pd.DataFrame) -> None:
         allele_sheet.column_dimensions[get_column_letter(col)].width = width
 
     workbook.save(OUT_FILE)
-    print(f"Completed successfully{OUT_FILE}")
+    print(f"\nГотово: {OUT_FILE}")
 
 
 def main() -> int:
@@ -534,7 +534,7 @@ def main() -> int:
         summary, allele_detail = run_analysis()
         write_excel(summary, allele_detail)
     except Exception as exc:
-        print(f"Error{exc}", file=sys.stderr)
+        print(f"ОШИБКА: {exc}", file=sys.stderr)
         return 1
     return 0
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+"""Portable implementation of netmhcpan_ii_match_comparison. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 from project_paths import DATA_ROOT
 
@@ -61,16 +61,16 @@ def load_rm(ag):
         BASE_INPUT.replace("{ag}", ag),
         INPUT_NAME.replace("{ag}", ag)
     )
-    print(f"Processing details{path}")
+    print(f"  Инпут файл: {path}")
     if not os.path.exists(path):
-        print(f"Required input or value was not found{path}")
+        print(f"  [ОШИБКА] Файл не найден: {path}")
         return None
 
     sheets = {}
     for sheet_name in (SHEET_EL, SHEET_BA, SHEET_AFF, SHEET_UNION):
         df = pd.read_excel(path, sheet_name=sheet_name)
         sheets[sheet_name] = df
-        print(f"Processing details{sheet_name}»: {len(df)}Table status")
+        print(f"    лист «{sheet_name}»: {len(df)} строк")
     return sheets
 
 
@@ -94,8 +94,8 @@ def analyse(sheets):
         n_pairs = len(pairs(df))
         if n_rows != n_pairs:
             raise ValueError(
-                f"Processing details{sheet_name}Processing details"
-                f"{n_rows}Table status{n_pairs}Processing details"
+                f"В листе «{sheet_name}» найдены дубли пар Allele-Peptide: "
+                f"{n_rows} строк, {n_pairs} уникальных пар."
             )
 
     p_el   = pairs(df_el)
@@ -107,7 +107,7 @@ def analyse(sheets):
 
     if n_total == 0:
         raise ValueError(
-            "Processing details"
+            "Лист Union_OR не содержит уникальных пар Allele-Peptide."
         )
 
     # Validation.
@@ -116,9 +116,9 @@ def analyse(sheets):
         only_computed = computed - p_uni
         only_union    = p_uni - computed
         raise ValueError(
-            f"Validation status"
-            f"Required input or value was not found{len(only_computed)}; "
-            f"Processing details{len(only_union)}."
+            f"Union_OR не совпадает с EL ∪ BA ∪ Aff. "
+            f"Отсутствуют в Union_OR: {len(only_computed)}; "
+            f"лишние в Union_OR: {len(only_union)}."
         )
 
     # Validation.
@@ -155,11 +155,11 @@ def analyse(sheets):
         row_info  = df_uni.loc[first_idx]
         exp       = flag_check.loc[first_idx]
         raise ValueError(
-            f"Processing details{n_bad}Processing details"
-            f"Processing details{row_info['Allele']}, {row_info['Peptide']}): "
-            f"Validation status{exp['exp_el']}, BA={exp['exp_ba']}, "
+            f"В Union_OR некорректные флаги у {n_bad} пар(ы). "
+            f"Первая: ({row_info['Allele']}, {row_info['Peptide']}): "
+            f"ожидалось EL={exp['exp_el']}, BA={exp['exp_ba']}, "
             f"Aff={exp['exp_aff']}, Count={exp['exp_cnt']}; "
-            f"Processing details{bool(row_info['Pass_Rank_EL'])}, "
+            f"получено EL={bool(row_info['Pass_Rank_EL'])}, "
             f"BA={bool(row_info['Pass_Rank_BA'])}, "
             f"Aff={bool(row_info['Pass_Affinity'])}, "
             f"Count={int(row_info['Passed_Thresholds_Count'])}."
@@ -217,7 +217,7 @@ def analyse(sheets):
 def write_excel(results, out_path):
     wb = Workbook()
     ws = wb.active
-    ws.title = "Threshold comparison"
+    ws.title = "Сравнение порогов"
 
     ags = [ag for ag in ANTIGENS if ag in results]
     n_ags = len(ags)
@@ -232,7 +232,7 @@ def write_excel(results, out_path):
 
     # Implementation detail; see the repository documentation.
     ws.merge_cells(f"A{row}:{last_col}{row}")
-    c = ws.cell(row, 1, "NetMHCIIpan 4.1 match comparison across thresholds")
+    c = ws.cell(row, 1, "Сравнение мэтчей NetMHCIIpan 4.1 по порогам")
     style_cell(c, fill=HEADER_FILL,
                font=Font(bold=True, color="FFFFFF", name="Calibri", size=13),
                alignment=CENTER)
@@ -242,7 +242,7 @@ def write_excel(results, out_path):
     # Threshold handling.
     ws.merge_cells(f"A{row}:{last_col}{row}")
     c = ws.cell(row, 1,
-        f"Processing details{THRESH_EL}  |  BA %Rank <= {THRESH_BA}"
+        f"Пороги: EL %Rank <= {THRESH_EL}  |  BA %Rank <= {THRESH_BA}"
         f"  |  Affinity_nM < {THRESH_AFF:.0f}")
     style_cell(c, fill=SUBHDR_FILL,
                font=Font(italic=True, color="FFFFFF", name="Calibri", size=10),
@@ -253,7 +253,7 @@ def write_excel(results, out_path):
     hdr1, hdr2 = row, row + 1
 
     ws.merge_cells(f"A{hdr1}:A{hdr2}")
-    c = ws.cell(hdr1, 1, "Processing details")
+    c = ws.cell(hdr1, 1, "Показатель")
     style_cell(c, fill=SUBHDR_FILL, font=SUBHDR_FONT, alignment=CENTER)
 
     for col_i, ag in enumerate(ags):
@@ -299,64 +299,64 @@ def write_excel(results, out_path):
         row += 1
 
     # Implementation detail; see the repository documentation.
-    data_row("Processing details",
+    data_row("Всего уникальных мэтчей в Union_OR",
              "n_total", "pct_total", total=True)
 
     # Implementation detail; see the repository documentation.
-    section_header("Processing details")
-    data_row("Processing details", "n_single", "pct_single", alt=True)
+    section_header("1. Мэтчи, проходящие ровно по 1 порогу")
+    data_row("   Ровно 1 порог", "n_single", "pct_single", alt=True)
 
     # Implementation detail; see the repository documentation.
-    section_header("Processing details")
-    data_row("Processing details", "n_two_plus", "pct_two_plus", alt=True)
+    section_header("2. Мэтчи, проходящие по >= 2 порогам")
+    data_row("   >= 2 порогов", "n_two_plus", "pct_two_plus", alt=True)
 
     # Implementation detail; see the repository documentation.
-    section_header("Processing details")
-    data_row("Processing details", "n_any", "pct_any", total=True)
+    section_header("3. Все мэтчи, проходящие хотя бы по 1 порогу (Union_OR)")
+    data_row("   >= 1 порога (итого)", "n_any", "pct_any", total=True)
 
     # Implementation detail; see the repository documentation.
-    section_header("Processing details")
+    section_header("4. Распределение мэтчей по режимам предикции")
 
-    data_row("Processing details",
+    data_row("   EL  (Rank_EL <= 10)  — всего",
              "n_pass_el", "pct_pass_el")
-    data_row("Processing details",
+    data_row("   BA  (Rank_BA <= 10)  — всего",
              "n_pass_ba", "pct_pass_ba")
-    data_row("Processing details",
+    data_row("   Aff (Affinity_nM < 5000)  — всего",
              "n_pass_aff", "pct_pass_aff")
 
-    section_header("Processing details")
-    data_row("Processing details",
+    section_header("   Разбивка по непересекающимся группам (диаграмма Венна):")
+    data_row("      Только EL  (не BA, не Aff)",
              "n_only_el",  "pct_only_el",  alt=True)
-    data_row("Processing details",
+    data_row("      Только BA  (не EL, не Aff)",
              "n_only_ba",  "pct_only_ba",  alt=True)
-    data_row("Processing details",
+    data_row("      Только Aff  (не EL, не BA)",
              "n_only_aff", "pct_only_aff", alt=True)
-    data_row("Processing details",
+    data_row("      EL + BA  (не Aff)",
              "n_el_ba",    "pct_el_ba",    alt=True)
-    data_row("Processing details",
+    data_row("      EL + Aff  (не BA)",
              "n_el_aff",   "pct_el_aff",   alt=True)
-    data_row("Processing details",
+    data_row("      BA + Aff  (не EL)",
              "n_ba_aff",   "pct_ba_aff",   alt=True)
-    data_row("Processing details",
+    data_row("      Все три (EL + BA + Aff)",
              "n_all_three","pct_all_three", total=True)
 
     # Implementation detail; see the repository documentation.
     row += 1
     ws.merge_cells(f"A{row}:{last_col}{row}")
-    c = ws.cell(row, 1, "Processing details")
+    c = ws.cell(row, 1, "Примечания:")
     style_cell(c, fill=HEADER_FILL,
                font=Font(bold=True, color="FFFFFF", name="Calibri", size=10),
                alignment=LEFT)
     row += 1
     notes = [
-        "Processing details",
-        "Processing details",
-        "Processing details",
-        "Processing details",
-        "Processing details",
-        "Processing details",
-        "Validation status",
-        "Processing details",
+        "% рассчитан от общего числа уникальных мэтчей в Union_OR для данного антигена.",
+        "Порог EL: Rank_EL <= 10 (лист Rank_EL_lte10).",
+        "Порог BA: Rank_BA <= 10 (лист Rank_BA_lte10).",
+        "Порог Aff: Affinity_nM < 5000 нМ (лист Affinity_lt5000).",
+        "Мэтч идентифицируется парой (Allele, Peptide).",
+        "Булевы флаги Pass_Rank_EL/Pass_Rank_BA/Pass_Affinity берутся из листа Union_OR.",
+        "Целостность проверяется: Union_OR должен совпадать с EL ∪ BA ∪ Aff.",
+        "Группы раздела 4 непересекающиеся: каждый мэтч входит ровно в одну группу.",
     ]
     for note in notes:
         ws.merge_cells(f"A{row}:{last_col}{row}")
@@ -370,41 +370,41 @@ def write_excel(results, out_path):
         ws.row_dimensions[r].height = 18
 
     wb.save(out_path)
-    print(f"Saved output{out_path}")
+    print(f"  Сохранено: {out_path}")
 
 
 # ──────────────────────────── main ────────────────────────────────────────────
 def main():
     print("=" * 60)
-    print("Processing details")
+    print("NetMHCIIpan 4.1 — сравнение мэтчей по порогам")
     print("=" * 60)
 
     all_results = {}
 
     for ag in ANTIGENS:
-        print(f"\n[{ag}Loaded input")
+        print(f"\n[{ag}] Загрузка данных...")
         sheets = load_rm(ag)
         if sheets is None:
-            print(f"Processing details{ag}Required input or value was not found")
+            print(f"  Пропуск антигена {ag}: файл не найден.")
             continue
 
         try:
             result = analyse(sheets)
         except ValueError as e:
-            print(f"Error{e}")
-            print(f"Processing details{ag}Validation status")
+            print(f"  [ОШИБКА] {e}")
+            print(f"  Пропуск антигена {ag}: данные не прошли проверку целостности.")
             continue
 
         all_results[ag] = result
 
-        print(f"Processing details{result['n_total']}")
-        print(f"Processing details{result['n_single']} ({result['pct_single']}%)")
-        print(f"Processing details{result['n_two_plus']} ({result['pct_two_plus']}%)")
-        print(f"Processing details{result['n_any']} ({result['pct_any']}%)")
-        print(f"Processing details{result['n_pass_el']} ({result['pct_pass_el']}%)")
-        print(f"Processing details{result['n_pass_ba']} ({result['pct_pass_ba']}%)")
-        print(f"Processing details{result['n_pass_aff']} ({result['pct_pass_aff']}%)")
-        print(f"Processing details{result['n_all_three']} ({result['pct_all_three']}%)")
+        print(f"  Всего мэтчей (Union_OR): {result['n_total']}")
+        print(f"  Ровно 1 порог: {result['n_single']} ({result['pct_single']}%)")
+        print(f"  >= 2 порогов:  {result['n_two_plus']} ({result['pct_two_plus']}%)")
+        print(f"  >= 1 порога:   {result['n_any']} ({result['pct_any']}%)")
+        print(f"  EL (любой):    {result['n_pass_el']} ({result['pct_pass_el']}%)")
+        print(f"  BA (любой):    {result['n_pass_ba']} ({result['pct_pass_ba']}%)")
+        print(f"  Aff (любой):   {result['n_pass_aff']} ({result['pct_pass_aff']}%)")
+        print(f"  Все три:       {result['n_all_three']} ({result['pct_all_three']}%)")
 
         out_dir = BASE_OUTPUT.replace("{ag}", ag)
         os.makedirs(out_dir, exist_ok=True)
@@ -412,7 +412,7 @@ def main():
         write_excel({ag: result}, out_path)
 
     if all_results:
-        print(f"Saved output")
+        print(f"\n[Сводный файл] Запись таблицы для всех антигенов...")
         first_ag = next(ag for ag in ANTIGENS if ag in all_results)
         summary_dir = BASE_OUTPUT.replace("{ag}", first_ag)
         os.makedirs(summary_dir, exist_ok=True)
@@ -421,7 +421,7 @@ def main():
         write_excel(all_results, summary_path)
 
     print(f"\n{'='*60}")
-    print("Completed successfully")
+    print("Готово!")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+"""Portable implementation of frank_mhc_ii. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 from project_paths import DATA_ROOT
 
@@ -71,7 +71,7 @@ RAW_PATHS = {
 # ═══════════════════════════════════════════════════════════════════════════
 
 class ToolLoadError(Exception):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of frank_mhc_ii. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     def __init__(self, kind: str, message: str):
         assert kind in ("input_file_missing", "parse_failed")
         self.kind = kind
@@ -81,20 +81,20 @@ class ToolLoadError(Exception):
 
 def _check_expected_alleles(found: set, expected: set, label: str,
                             fatal: bool = True, allow_extra: bool = False):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of frank_mhc_ii. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     missing = expected - found
     extra = found - expected
     if not missing and (allow_extra or not extra):
         return
     parts = []
     if missing:
-        parts.append(f"Required input or value was not found{sorted(missing)}")
+        parts.append(f"отсутствуют {sorted(missing)}")
     if extra and not allow_extra:
-        parts.append(f"Processing details{sorted(extra)}")
-    message = f"{label}Allele status" + "; ".join(parts)
+        parts.append(f"лишние {sorted(extra)}")
+    message = f"{label}: несоответствие набора аллелей — " + "; ".join(parts)
     if fatal:
         raise ToolLoadError("parse_failed", message)
-    print(f"    [!] {message}Processing details")
+    print(f"    [!] {message} (не блокирует расчёт — как в оригинальном скрипте)")
 
 
 def _check_no_cross_part_duplicates(alleles_per_file: dict, label: str):
@@ -105,7 +105,7 @@ def _check_no_cross_part_duplicates(alleles_per_file: dict, label: str):
     dup = {a: [fn for fn, al in alleles_per_file.items() if a in al]
            for a, c in counts.items() if c > 1}
     if dup:
-        raise ToolLoadError("parse_failed", f"{label}Allele status{dup}")
+        raise ToolLoadError("parse_failed", f"{label}: аллели встречаются в нескольких частях: {dup}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -128,17 +128,17 @@ def _normalize_dashes(s: str) -> str:
 
 
 def normalize_allele(raw) -> str:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of frank_mhc_ii. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if raw is None:
-        raise ValueError("Required input or value was not found")
+        raise ValueError("аллель отсутствует (None)")
     s = str(raw).strip()
     if not s:
-        raise ValueError("Allele status")
+        raise ValueError("пустая строка вместо аллеля")
     s = _normalize_dashes(s)
     s = re.sub(r'^HLA-', '', s, flags=re.IGNORECASE)
     m = re.match(r'^([A-Z]+\d)[\*_]?(\d{2})[:_]?(\d{2})$', s, flags=re.IGNORECASE)
     if not m:
-        raise ValueError(f"Allele status{raw!r}")
+        raise ValueError(f"не удалось распознать формат аллеля: {raw!r}")
     gene, group, protein = m.groups()
     return f"{gene.upper()}*{group}:{protein}"
 
@@ -148,7 +148,7 @@ def norm_peptide(p) -> str:
 
 
 def mhc2_raw_to_standard(raw: str) -> str:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of frank_mhc_ii. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     raw = raw.strip()
     m = re.match(r'^((?:HLA-)?[A-Z]+\d*)[_*](\d{2})(\d{2})$', raw)
     if m:
@@ -248,12 +248,12 @@ def load_validated_pairs(xlsx_path: str) -> list:
     try:
         df = pd.read_excel(xlsx_path, header=0)
     except Exception as exc:
-        raise ValueError(f"Processing details{xlsx_path}: {exc}") from exc
+        raise ValueError(f"Не удалось прочитать {xlsx_path}: {exc}") from exc
     if EXCEL_ALLELE_COL not in df.columns or EXCEL_PEPTIDE_COL not in df.columns:
         raise ValueError(
-            f"Processing details{xlsx_path}Required input or value was not found"
-            f"'{EXCEL_ALLELE_COL}Processing details{EXCEL_PEPTIDE_COL}'. "
-            f"Table status{list(df.columns)}"
+            f"В файле {xlsx_path} не найдены столбцы "
+            f"'{EXCEL_ALLELE_COL}' и/или '{EXCEL_PEPTIDE_COL}'. "
+            f"Найденные колонки: {list(df.columns)}"
         )
     sub = df[[EXCEL_ALLELE_COL, EXCEL_PEPTIDE_COL]].dropna()
 
@@ -262,7 +262,7 @@ def load_validated_pairs(xlsx_path: str) -> list:
         try:
             a = normalize_allele(row[EXCEL_ALLELE_COL])
         except ValueError as exc:
-            errors.append(f"Table status{idx}: {exc}")
+            errors.append(f"строка {idx}: {exc}")
             continue
         p = norm_peptide(row[EXCEL_PEPTIDE_COL])
         if a and p and (a, p) not in seen:
@@ -271,35 +271,35 @@ def load_validated_pairs(xlsx_path: str) -> list:
 
     if errors:
         sample = "; ".join(errors[:10])
-        more = f" (+{len(errors) - 10}Processing details" if len(errors) > 10 else ""
+        more = f" (+{len(errors) - 10} ещё)" if len(errors) > 10 else ""
         raise ValueError(
-            f"Processing details{xlsx_path}Allele status"
-            f"{len(errors)}Error"
-            f"Table status"
-            f"Processing details{sample}{more}"
+            f"В файле {xlsx_path} не удалось нормализовать аллели в "
+            f"{len(errors)} строках референсного набора — это ФАТАЛЬНАЯ ошибка "
+            f"(молчаливое исключение таких строк исказило бы N_reference и "
+            f"итоговую статистику FRANK): {sample}{more}"
         )
     if not pairs:
         raise ValueError(
-            f"Processing details{xlsx_path}Required input or value was not found"
-            f"Allele status"
+            f"В файле {xlsx_path} не найдено ни одной валидной уникальной пары "
+            f"(аллель, пептид) — референсный набор пуст."
         )
     return pairs
 
 
 def select_evaluable_pairs(pairs: list, antigen: str) -> tuple[list, set, int]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of frank_mhc_ii. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     evaluable_alleles, _ = get_allele_sets("II", antigen)
     present_alleles = {allele for allele, _ in pairs}
     missing_alleles = evaluable_alleles - present_alleles
     if missing_alleles:
         raise ValueError(
-            f"Processing details{antigen}Required input or value was not found"
+            f"В референсном Excel для {antigen} отсутствуют evaluable-аллели MHC II: "
             f"{', '.join(sorted(missing_alleles))}"
         )
 
     filtered = [(allele, peptide) for allele, peptide in pairs if allele in evaluable_alleles]
     if not filtered:
-        raise ValueError(f"Processing details{antigen}Processing details")
+        raise ValueError(f"После фильтрации по evaluable set для {antigen}, MHC II не осталось пар")
     return filtered, evaluable_alleles, len(pairs) - len(filtered)
 
 
@@ -316,17 +316,17 @@ def select_evaluable_pairs(pairs: list, antigen: str) -> tuple[list, set, int]:
 def load_iedb_tsv_multi(tsv_path: str, score_cols: list, expected_alleles: set) -> dict:
     fname = os.path.basename(tsv_path)
     if not os.path.isfile(tsv_path):
-        raise ToolLoadError("input_file_missing", f"Required input or value was not found{tsv_path}")
+        raise ToolLoadError("input_file_missing", f"Файл не найден: {tsv_path}")
 
     try:
         df = pd.read_csv(tsv_path, sep="\t", low_memory=False)
     except (OSError, pd.errors.ParserError, UnicodeError) as exc:
-        raise ToolLoadError("parse_failed", f"{fname}Processing details{exc}") from exc
+        raise ToolLoadError("parse_failed", f"{fname}: не удалось прочитать TSV: {exc}") from exc
     df.columns = [c.strip() for c in df.columns]
     required = {"allele", "peptide", *score_cols}
     missing_cols = required - set(df.columns)
     if missing_cols:
-        raise ToolLoadError("parse_failed", f"{fname}Required input or value was not found{sorted(missing_cols)}")
+        raise ToolLoadError("parse_failed", f"{fname}: отсутствуют колонки {sorted(missing_cols)}")
 
     alleles_norm = []
     errors = []
@@ -334,14 +334,14 @@ def load_iedb_tsv_multi(tsv_path: str, score_cols: list, expected_alleles: set) 
         try:
             alleles_norm.append(normalize_allele(raw))
         except ValueError as exc:
-            errors.append(f"Table status{idx}: {exc}")
+            errors.append(f"строка {idx}: {exc}")
             alleles_norm.append(None)
     if errors:
         sample = "; ".join(errors[:10])
-        more = f" (+{len(errors) - 10}Processing details" if len(errors) > 10 else ""
+        more = f" (+{len(errors) - 10} ещё)" if len(errors) > 10 else ""
         raise ToolLoadError("parse_failed",
-            f"{fname}Allele status{len(errors)}Table status"
-            f"Processing details{sample}{more}")
+            f"{fname}: не удалось нормализовать аллели в {len(errors)} строках "
+            f"предсказаний: {sample}{more}")
 
     df = df.assign(allele_norm=alleles_norm)
     df["peptide_norm"] = df["peptide"].apply(norm_peptide)
@@ -371,7 +371,7 @@ def load_iedb_tsv_multi(tsv_path: str, score_cols: list, expected_alleles: set) 
                 fields[col] = v
 
     if not result:
-        raise ToolLoadError("parse_failed", f"{fname}Required input or value was not found")
+        raise ToolLoadError("parse_failed", f"{fname}: не найдено ни одной строки с данными")
     return result
 
 
@@ -392,12 +392,12 @@ def _empty_parse_stats() -> dict:
 def parse_netmhciipan_file(path: str):
     fname = os.path.basename(path)
     if not os.path.isfile(path):
-        raise ToolLoadError("input_file_missing", f"Required input or value was not found{path}")
+        raise ToolLoadError("input_file_missing", f"Файл не найден: {path}")
     try:
         with open(path, "r", encoding="utf-8", errors="replace") as fh:
             lines = fh.readlines()
     except OSError as exc:
-        raise ToolLoadError("parse_failed", f"{fname}Processing details{exc}") from exc
+        raise ToolLoadError("parse_failed", f"{fname}: не удалось прочитать файл: {exc}") from exc
 
     header_idx = None
     for i, line in enumerate(lines[:10]):
@@ -405,14 +405,14 @@ def parse_netmhciipan_file(path: str):
             header_idx = i
             break
     if header_idx is None or header_idx == 0:
-        raise ToolLoadError("parse_failed", f"{fname}Required input or value was not found")
+        raise ToolLoadError("parse_failed", f"{fname}: не найдена строка заголовков ('Pos')")
 
     allele_row = lines[header_idx - 1].rstrip("\n").split("\t")
     header_row = [c.strip() for c in lines[header_idx].rstrip("\n").split("\t")]
 
     block_starts = [i for i, v in enumerate(header_row) if v == "Core"]
     if not block_starts:
-        raise ToolLoadError("parse_failed", f"{fname}Required input or value was not found")
+        raise ToolLoadError("parse_failed", f"{fname}: не найдено блоков аллелей (колонка 'Core')")
     try:
         ave_idx = header_row.index("Ave")
     except ValueError:
@@ -423,7 +423,7 @@ def parse_netmhciipan_file(path: str):
     for start, end in zip(block_starts, block_ends):
         allele_raw = allele_row[start].strip() if start < len(allele_row) else ""
         if not allele_raw:
-            raise ToolLoadError("parse_failed", f"{fname}Allele status{start}")
+            raise ToolLoadError("parse_failed", f"{fname}: пустое имя аллеля для блока в колонке {start}")
         sub_headers = header_row[start:end]
         try:
             rank_el_idx = start + sub_headers.index("Rank")
@@ -431,13 +431,13 @@ def parse_netmhciipan_file(path: str):
             afin_idx = start + sub_headers.index("nM")
         except ValueError:
             raise ToolLoadError("parse_failed",
-                f"{fname}Validation status{allele_raw} ({sub_headers})")
+                f"{fname}: неожиданная структура блока аллеля {allele_raw} ({sub_headers})")
         blocks.append((mhc2_raw_to_standard(allele_raw), rank_el_idx, rank_ba_idx, afin_idx))
 
     allele_names = [a for a, _, _, _ in blocks]
     if len(allele_names) != len(set(allele_names)):
         dup = [a for a, c in Counter(allele_names).items() if c > 1]
-        raise ToolLoadError("parse_failed", f"{fname}Allele status{dup}")
+        raise ToolLoadError("parse_failed", f"{fname}: повторяющиеся аллели среди блоков: {dup}")
 
     stats = _empty_parse_stats()
     stats["rows_per_allele"] = {a: 0 for a in allele_names}
@@ -492,7 +492,7 @@ def parse_netmhciipan_file(path: str):
                 fields["affinity_nM"] = afin
 
     if not stats["peptide_rows"]:
-        raise ToolLoadError("parse_failed", f"{fname}Required input or value was not found")
+        raise ToolLoadError("parse_failed", f"{fname}: не найдено ни одной строки данных")
 
     return result, stats
 
@@ -502,15 +502,15 @@ def _check_netmhciipan_integrity(file_stats: dict, tool_label: str):
     peptide_lists = {}
     for fname, stats in file_stats.items():
         if stats["corrupted_rows"] > 0:
-            problems.append(f"{fname}: {stats['corrupted_rows']}Table status")
+            problems.append(f"{fname}: {stats['corrupted_rows']} повреждённых строк")
         if stats["truncated_blocks"] > 0:
-            problems.append(f"{fname}: {stats['truncated_blocks']}Processing details")
+            problems.append(f"{fname}: {stats['truncated_blocks']} обрезанных блоков")
         nan_total = sum(stats["nan_counts"].values())
         if nan_total > 0:
-            problems.append(f"{fname}Processing details{stats['nan_counts']}")
+            problems.append(f"{fname}: NaN в метриках {stats['nan_counts']}")
         rpa = stats["rows_per_allele"]
         if len(set(rpa.values())) > 1:
-            problems.append(f"{fname}Allele status{rpa}")
+            problems.append(f"{fname}: неодинаковое число строк по аллелям: {rpa}")
         peptide_lists[fname] = stats["peptide_rows"]
 
     if len(peptide_lists) > 1:
@@ -520,8 +520,8 @@ def _check_netmhciipan_integrity(file_stats: dict, tool_label: str):
             other_list = peptide_lists[other_name]
             if other_list != base_list:
                 problems.append(
-                    f"{base_name}Processing details{other_name}Peptide status"
-                    f"Validation status{len(base_list)} vs {len(other_list)}Table status"
+                    f"{base_name} и {other_name}: последовательности пептидных строк "
+                    f"не совпадают ({len(base_list)} vs {len(other_list)} строк)"
                 )
 
     if problems:
@@ -544,7 +544,7 @@ def load_tool_netmhciipan_4_1(antigen: str) -> dict:
     _check_no_cross_part_duplicates(alleles_per_file, "NetMHCIIpan_4.1")
 
     if not merged:
-        raise ToolLoadError("parse_failed", "Required input or value was not found")
+        raise ToolLoadError("parse_failed", "NetMHCIIpan_4.1: не найдено данных ни в одном файле")
 
     expected, _ = get_allele_sets("II", antigen)
     _check_expected_alleles(
@@ -584,7 +584,7 @@ def parse_netmhcii23_html(path: str):
             lines = fh.readlines()
     except OSError as exc:
         raise ToolLoadError("parse_failed",
-            f"{os.path.basename(path)}Processing details{exc}") from exc
+            f"{os.path.basename(path)}: не удалось прочитать файл: {exc}") from exc
     for line in lines:
         m = _NETMHCII23_LINE_RE.match(line)
         if not m:
@@ -609,7 +609,7 @@ def load_tool_netmhc_ii_2_3(antigen: str) -> dict:
     pattern = RAW_PATHS["NetMHC_II_2.3"][antigen]
     files = sorted(glob.glob(pattern))
     if not files:
-        raise ToolLoadError("input_file_missing", f"Required input or value was not found{pattern}")
+        raise ToolLoadError("input_file_missing", f"Не найдено файлов по шаблону: {pattern}")
     merged = {}
     total_matched = 0
     for f in files:
@@ -619,7 +619,7 @@ def load_tool_netmhc_ii_2_3(antigen: str) -> dict:
             merged.setdefault(allele, {}).update(d)
     if total_matched == 0:
         raise ToolLoadError("parse_failed",
-            f"Table status{len(files)}Processing details")
+            f"NetMHC_II_2.3: ни одна строка ни в одном из {len(files)} файлов не распознана")
 
     expected, _ = get_allele_sets("II", antigen)
     _check_expected_alleles(
@@ -770,7 +770,7 @@ def evaluate_pair(peptide: str, allele: str, sequence: str,
 
 
 def extract_scalar_dict(tool_data: dict, key: str) -> dict:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of frank_mhc_ii. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     out = {}
     for allele, pep_dict in tool_data.items():
         d = {}
@@ -804,25 +804,25 @@ def make_sheet_name(name: str, used: set) -> str:
 
 def process_antigen(antigen: str, meta: dict):
     print(f"\n{'=' * 70}")
-    print(f"Processing details{antigen}  (MHC II)")
+    print(f"Антиген: {antigen}  (MHC II)")
     print(f"{'=' * 70}")
 
     if not os.path.isfile(meta["xlsx"]):
-        print(f"Required input or value was not found{meta['xlsx']}")
+        print(f"  [ОШИБКА] Excel не найден: {meta['xlsx']}")
         return None
     if not os.path.isfile(meta["txt"]):
-        print(f"Required input or value was not found{meta['txt']}")
+        print(f"  [ОШИБКА] Файл последовательности не найден: {meta['txt']}")
         return None
 
     sequence = read_sequence(meta["txt"])
     if not sequence:
-        print(f"Error{meta['txt']}")
+        print(f"  [ОШИБКА] Аминокислотная последовательность пуста: {meta['txt']}")
         return None
     if not re.fullmatch(r"[A-Z]+", sequence):
         bad_chars = sorted(set(re.findall(r"[^A-Z]", sequence)))
-        print(f"Error{bad_chars}")
+        print(f"  [ОШИБКА] Последовательность содержит недопустимые символы: {bad_chars}")
         return None
-    print(f"Processing details{len(sequence)}Processing details")
+    print(f"  Длина последовательности антигена: {len(sequence)} а.о.")
 
     try:
         all_validated_pairs = load_validated_pairs(meta["xlsx"])
@@ -830,11 +830,11 @@ def process_antigen(antigen: str, meta: dict):
             all_validated_pairs, antigen
         )
     except ValueError as exc:
-        print(f"Error{exc}")
+        print(f"  [ОШИБКА] {exc}")
         return None
     print(
-        f"  Evaluable set: {len(evaluable_alleles)}Allele status"
-        f"{len(validated_pairs)}Processing details{n_excluded}Processing details"
+        f"  Evaluable set: {len(evaluable_alleles)} аллелей; "
+        f"{len(validated_pairs)} пар включено, {n_excluded} пар вне набора исключено"
     )
     n_reference = len(validated_pairs)
 
@@ -852,7 +852,7 @@ def process_antigen(antigen: str, meta: dict):
             tool_error = exc
             tool_data = {}
             fatal_issues.append((spec["name"], exc.kind, exc.message))
-            print(f"Error{exc.kind}] {exc.message}")
+            print(f"    [ФАТАЛЬНО:{exc.kind}] {exc.message}")
 
         for score_spec in spec["scores"]:
             if tool_error is not None:
@@ -929,10 +929,10 @@ def process_antigen(antigen: str, meta: dict):
 
             tag = f"[{status_flag}]"
             if n_evaluated:
-                print(f"    {tag} [{score_spec['label']}Processing details{n_evaluated}/{n_reference}   "
+                print(f"    {tag} [{score_spec['label']}] Оценено: {n_evaluated}/{n_reference}   "
                       f"Mean={mean_v:.2f}%   Median={median_v:.2f}%")
             else:
-                print(f"    {tag} [{score_spec['label']}Processing details{n_reference}")
+                print(f"    {tag} [{score_spec['label']}] Оценено: 0/{n_reference}")
             if skip_str:
                 print(f"      {skip_str}")
 
@@ -1024,7 +1024,7 @@ def save_frank_excel(summary_df: pd.DataFrame, detail_sheets: dict, fatal_issues
 # ═══════════════════════════════════════════════════════════════════════════
 
 def main():
-    print("Processing details")
+    print("Расчёт FRANK score — MHC класс II")
     antigen_failed = []
     all_fatal_issues = []
 
@@ -1041,32 +1041,32 @@ def main():
         os.makedirs(out_dir, exist_ok=True)
         out_path = os.path.join(out_dir, f"FRANK_{antigen}_MHC_II.xlsx")
         save_frank_excel(summary_df, detail_sheets, fatal_issues, out_path)
-        print(f"Saved output{out_path}")
+        print(f"\n  Сохранено: {out_path}")
         if fatal_issues:
-            print(f"Warning{len(fatal_issues)}Loaded input"
-                  f"Processing details")
+            print(f"  [ВНИМАНИЕ] {len(fatal_issues)} инструмент(ов) не загрузились "
+                  f"для этого антигена — см. лист FATAL_ERRORS.")
 
     print(f"\n{'=' * 70}")
-    print("Processing details")
+    print("ИТОГ")
     print(f"{'=' * 70}")
     if antigen_failed:
-        print(f"Required input or value was not found"
-              f"Allele status{', '.join(antigen_failed)}")
+        print(f"Антигены без выходного файла (Excel/TXT не найдены, или референсный "
+              f"набор содержал нераспознаваемые аллели): {', '.join(antigen_failed)}")
     if all_fatal_issues:
-        print(f"Error{len(all_fatal_issues)}):")
+        print(f"\nФатальные сбои загрузки данных инструментов ({len(all_fatal_issues)}):")
         for antigen, tool, kind, message in all_fatal_issues:
             print(f"  [{antigen}] {tool} ({kind}): {message}")
-        print("Warning"
-              "Processing details"
-              "Processing details"
-              "Allele status"
-              "Table status"
-              "Processing details")
+        print("\nВНИМАНИЕ: результаты FRANK для перечисленных выше пар "
+              "(антиген, инструмент) НЕ рассчитаны из-за технических проблем со "
+              "входными файлами — это НЕ означает, что инструмент не поддерживает "
+              "эти аллели. Файлы Excel созданы (для остальных инструментов), но "
+              "строки Summary для этих комбинаций помечены статусом INPUT_ERROR "
+              "и подсвечены красным.")
 
     if antigen_failed or all_fatal_issues:
         sys.exit(1)
     else:
-        print("Error")
+        print("Все антигены и все инструменты обработаны без ошибок.")
 
 
 if __name__ == "__main__":

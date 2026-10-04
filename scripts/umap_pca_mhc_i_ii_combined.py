@@ -235,7 +235,7 @@ def find_input_file(
 ) -> Path:
     folder = (
         base
-        / f"Processing details{antigen}"
+        / f"{antigen}"
         / f"Matches MHC {mhc_class}"
         / source_dir
     )
@@ -987,7 +987,7 @@ def parse_args() -> argparse.Namespace:
         description="Combined ProtT5 UMAP/PCA figure for HLA I and HLA II"
     )
     parser.add_argument(
-        "--base", default=str(BASE), help="Processing details"
+        "--base", default=str(BASE), help="Base directory containing '...'"
     )
     parser.add_argument(
         "--output-dir",

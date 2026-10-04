@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+"""Portable implementation of allele_sets. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 # Implementation detail; see the repository documentation.
 
@@ -83,26 +83,26 @@ FULL_REFERENCE_SET_MHC_II = {
 
 
 def get_allele_sets(mhc_class: str, antigen: str) -> tuple[set[str], set[str]]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of allele_sets. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     normalized_class = str(mhc_class).strip().upper()
     by_class = {
         'I': (EVALUABLE_SET_MHC_I, FULL_REFERENCE_SET_MHC_I),
         'II': (EVALUABLE_SET_MHC_II, FULL_REFERENCE_SET_MHC_II),
     }
     if normalized_class not in by_class:
-        raise ValueError(f"Processing details{mhc_class!r}Validation status")
+        raise ValueError(f"Неизвестный класс HLA: {mhc_class!r}; ожидается 'I' или 'II'")
 
     evaluable_by_antigen, full_by_antigen = by_class[normalized_class]
     if antigen not in evaluable_by_antigen or antigen not in full_by_antigen:
         available = sorted(set(evaluable_by_antigen) & set(full_by_antigen))
-        raise KeyError(f"Allele status{antigen!r}Processing details{available}")
+        raise KeyError(f"Нет наборов аллелей для антигена {antigen!r}; доступны: {available}")
 
     evaluable = set(evaluable_by_antigen[antigen])
     full_reference = set(full_by_antigen[antigen])
     if not evaluable <= full_reference:
         extra = sorted(evaluable - full_reference)
         raise ValueError(
-            f"Processing details"
+            f"Evaluable set должен быть подмножеством full reference set; "
             f"MHC {normalized_class}, {antigen}: {extra}"
         )
     return evaluable, full_reference

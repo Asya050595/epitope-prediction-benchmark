@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+"""Portable implementation of benchmarking_mhc_i_per_allele. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 from __future__ import annotations
 
@@ -17,17 +17,17 @@ try:
     import pandas as pd
 except ImportError as e:
     sys.exit(
-        "Processing details"
+        "ERROR: установите pandas и openpyxl:\n"
         "  pip install pandas openpyxl\n"
-        f"Processing details{e}"
+        f"Детали: {e}"
     )
 
 try:
     from allele_sets import get_allele_sets
 except ImportError as e:
     sys.exit(
-        "Processing details"
-        f"Processing details{e}"
+        "ERROR: положите allele_sets.py рядом с benchmarking-скриптом.\n"
+        f"Детали: {e}"
     )
 
 try:
@@ -36,9 +36,9 @@ try:
     from openpyxl.worksheet.table import Table, TableStyleInfo
 except ImportError as e:
     sys.exit(
-        "Processing details"
+        "ERROR: установите openpyxl:\n"
         "  pip install openpyxl\n"
-        f"Processing details{e}"
+        f"Детали: {e}"
     )
 
 
@@ -133,7 +133,7 @@ def find_named_col(cols: Sequence[object], candidates: Sequence[str]) -> Optiona
 
 
 def normalize_allele(value: object) -> str:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of benchmarking_mhc_i_per_allele. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     s = str(value).strip().upper()
     if not s or s == "NAN":
         return ""
@@ -177,7 +177,7 @@ def allele_sort_key(allele: str) -> Tuple[int, str, int, int, str]:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def dataset_path_for_antigen(base: Path, antigen: str) -> Path:
-    return base / f"Processing details{antigen}" / f"{antigen}.xlsx"
+    return base / f"{antigen}" / f"{antigen}.xlsx"
 
 
 def find_dataset_sheet_and_cols(path: Path) -> Tuple[str, object, object]:
@@ -189,9 +189,9 @@ def find_dataset_sheet_and_cols(path: Path) -> Tuple[str, object, object]:
         if a_col is not None and p_col is not None:
             return sheet, a_col, p_col
     raise ValueError(
-        f"Required input or value was not found{MHC_CLASS}. "
-        f"Processing details{DATASET_ALLELE_CANDIDATES}, peptide={DATASET_PEPTIDE_CANDIDATES}; "
-        f"Processing details{path}"
+        f"Не найдены колонки экспериментального датасета для MHC {MHC_CLASS}. "
+        f"Искала allele={DATASET_ALLELE_CANDIDATES}, peptide={DATASET_PEPTIDE_CANDIDATES}; "
+        f"файл={path}"
     )
 
 
@@ -287,7 +287,7 @@ def find_pair_sheet(xls: pd.ExcelFile, kind: str) -> Optional[str]:
 
 
 def find_input_file(base: Path, antigen: str, kind: str, source_dir: str, suffix: str) -> Path:
-    folder = base / f"Processing details{antigen}" / f"Matches MHC {MHC_CLASS}" / source_dir
+    folder = base / f"{antigen}" / f"Matches MHC {MHC_CLASS}" / source_dir
     exact = folder / f"{kind}_{antigen}_{suffix}.xlsx"
     if exact.exists():
         return exact
@@ -333,14 +333,14 @@ def load_pair_file(
         xls = pd.ExcelFile(path)
         sheet = find_pair_sheet(xls, kind)
         if sheet is None:
-            raise ValueError(f"Required input or value was not found{xls.sheet_names}")
+            raise ValueError(f"не найден лист с колонками allele/peptide; sheets={xls.sheet_names}")
         df = pd.read_excel(xls, sheet_name=sheet, keep_default_na=False)
         log["Sheet"] = sheet
     except Exception as e:
         msg = f"cannot read: {e}"
         log.update({"Status": "ERROR", "Message": msg})
         if strict:
-            raise RuntimeError(f"Processing details{path}: {e}") from e
+            raise RuntimeError(f"Не удалось прочитать {path}: {e}") from e
         print(f"  [!] {kind:2s} | {antigen:5s} | {tool_label:12s} | {path.name} | {msg}")
         return pd.DataFrame(columns=columns), log
 
@@ -574,7 +574,7 @@ def build_validation_table(
 def output_path_for_antigen(base: Path, antigen: str) -> Path:
     return (
         base
-        / f"Processing details{antigen}"
+        / f"{antigen}"
         / f"Benchmarking MHC {MHC_CLASS}"
         / f"Benchmarking_{antigen}_MHC_{MHC_CLASS}_per_allele.xlsx"
     )
@@ -734,9 +734,17 @@ def print_benchmark_to_console(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=f"Create MHC {MHC_CLASS} per-allele benchmarking Excel tables")
-    parser.add_argument("--base", default=str(BASE), help="Processing details")
+    parser.add_argument("--base", default=str(BASE), help="Base directory with '...'")
     parser.add_argument("--antigen", default="all", choices=ANTIGENS + ["all"], help="Antigen to process; default: all")
-    parser.add_argument("--strict", action="store_true", help="Fail if an expected input file/sheet is missing or unreadable")
+    missing_group = parser.add_mutually_exclusive_group()
+    missing_group.add_argument(
+        "--strict", dest="strict", action="store_true", default=True,
+        help="Fail if an expected input file or sheet is missing (default)",
+    )
+    missing_group.add_argument(
+        "--allow-missing", dest="strict", action="store_false",
+        help="Continue with missing inputs; intended only for diagnostics",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Read inputs and print tables, but do not save Excel files")
     return parser.parse_args()
 

@@ -1,4 +1,4 @@
-"""English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+"""Portable implementation of iedb_i_match_comparison. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 from project_paths import DATA_ROOT
 
@@ -21,7 +21,7 @@ MODES = {
     "Consensus": ("Matches IEDB_I_Consensus",           "IEDB_I_Consensus"),
 }
 
-SCRIPT_DIR = os.path.join(BASE, "scripts", "Processing details")
+SCRIPT_DIR = os.path.join(BASE, "scripts", "Сравнение мэтчей MHC I")
 
 # Formatting.
 
@@ -74,16 +74,16 @@ MATCH_SHEET = "Union_OR"
 
 
 def read_matches(path: str) -> set[tuple]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of iedb_i_match_comparison. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     try:
         xls = pd.ExcelFile(path)
     except Exception as exc:
-        print(f"Processing details{path}: {exc}")
+        print(f"  [!] Не удалось открыть файл {path}: {exc}")
         sys.exit(1)
 
     if MATCH_SHEET not in xls.sheet_names:
-        print(f"Processing details{path}Processing details{MATCH_SHEET}' "
-              f"Processing details{xls.sheet_names})")
+        print(f"  [!] В файле {path} нет листа '{MATCH_SHEET}' "
+              f"(найдены листы: {xls.sheet_names})")
         sys.exit(1)
 
     df = pd.read_excel(xls, sheet_name=MATCH_SHEET)
@@ -91,8 +91,8 @@ def read_matches(path: str) -> set[tuple]:
 
     missing = {"allele", "peptide"} - set(df.columns)
     if missing:
-        print(f"Processing details{MATCH_SHEET}Processing details{path} "
-              f"Processing details{sorted(missing)}")
+        print(f"  [!] В листе '{MATCH_SHEET}' файла {path} "
+              f"нет столбцов: {sorted(missing)}")
         sys.exit(1)
 
     return set(zip(df["allele"].astype(str).str.strip(),
@@ -127,9 +127,9 @@ def compute_stats(sets: dict[str, set]) -> dict:
     all_3    = el  & ba  & con
 
     venn = {
-        "Processing details":              len(only_el),
-        "Processing details":              len(only_ba),
-        "Processing details":       len(only_con),
+        "Только EL":              len(only_el),
+        "Только BA":              len(only_ba),
+        "Только Consensus":       len(only_con),
         "EL + BA":                len(el_ba),
         "EL + Consensus":         len(el_con),
         "BA + Consensus":         len(ba_con),
@@ -158,19 +158,19 @@ def write_antigen_sheet(ws, antigen: str, stats: dict, sets: dict):
 
     # Implementation detail; see the repository documentation.
     ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=3)
-    c = ws.cell(row=row, column=1, value=f"Processing details{antigen}")
+    c = ws.cell(row=row, column=1, value=f"Антиген: {antigen}")
     style(c, font=HEADER_FONT, fill=HEADER_FILL, align=CENTER, border=MED_BORDER)
     row += 2
 
     # Implementation detail; see the repository documentation.
     ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=3)
     c = ws.cell(row=row, column=1,
-                value="Processing details")
+                value="1. Мэтчи по каждому отдельному режиму")
     style(c, font=SUBHEAD_FONT, fill=SUBHEAD_FILL, align=LEFT, border=THIN_BORDER)
     row += 1
 
     write_header_row(ws, row,
-                     ["Mode", "Processing details", "Processing details"],
+                     ["Режим", "Число мэтчей", "% от union"],
                      [SINGLE_FILL] * 3,
                      [BOLD_FONT]   * 3)
     row += 1
@@ -193,11 +193,11 @@ def write_antigen_sheet(ws, antigen: str, stats: dict, sets: dict):
     # Implementation detail; see the repository documentation.
     ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=3)
     c = ws.cell(row=row, column=1,
-                value="Processing details")
+                value="2. Мэтчи, прошедшие по любому режиму (union)")
     style(c, font=SUBHEAD_FONT, fill=SUBHEAD_FILL, align=LEFT, border=THIN_BORDER)
     row += 1
 
-    c1 = ws.cell(row=row, column=1, value="Processing details")
+    c1 = ws.cell(row=row, column=1, value="Всего уникальных мэтчей (union)")
     c2 = ws.cell(row=row, column=2, value=n_union)
     ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=3)
     style(c1, font=BOLD_FONT, fill=UNION_FILL, align=LEFT,   border=THIN_BORDER)
@@ -208,12 +208,12 @@ def write_antigen_sheet(ws, antigen: str, stats: dict, sets: dict):
     # Implementation detail; see the repository documentation.
     ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=3)
     c = ws.cell(row=row, column=1,
-                value="Processing details")
+                value="3. Распределение мэтчей по режимам")
     style(c, font=SUBHEAD_FONT, fill=SUBHEAD_FILL, align=LEFT, border=THIN_BORDER)
     row += 1
 
     write_header_row(ws, row,
-                     ["Processing details", "Processing details", "Processing details"],
+                     ["Группа", "Число мэтчей", "% от union"],
                      [VENN_FILL] * 3,
                      [BOLD_FONT] * 3)
     row += 1
@@ -230,7 +230,7 @@ def write_antigen_sheet(ws, antigen: str, stats: dict, sets: dict):
         row += 1
 
     # Implementation detail; see the repository documentation.
-    c1 = ws.cell(row=row, column=1, value="Processing details")
+    c1 = ws.cell(row=row, column=1, value="Итого (union)")
     c2 = ws.cell(row=row, column=2, value=n_union)
     c3 = ws.cell(row=row, column=3, value=1.0)
     for c, fmt in [(c1, None), (c2, NUM_FMT), (c3, PCT_FMT)]:
@@ -243,14 +243,14 @@ def write_antigen_sheet(ws, antigen: str, stats: dict, sets: dict):
 # Implementation detail; see the repository documentation.
 
 def write_summary_sheet(ws, all_stats: dict):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of iedb_i_match_comparison. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     ws.column_dimensions["A"].width = 10
 
     modes_display = ["NetMHCpan 4.1 EL", "NetMHCpan 4.1 BA", "Consensus"]
     modes_keys    = ["EL", "BA", "Consensus"]
 
     venn_labels = [
-        "Processing details", "Processing details", "Processing details",
+        "Только EL", "Только BA", "Только Consensus",
         "EL + BA", "EL + Consensus", "BA + Consensus",
         "EL + BA + Consensus",
     ]
@@ -262,7 +262,7 @@ def write_summary_sheet(ws, all_stats: dict):
     ws.merge_cells(start_row=row, start_column=1,
                    end_row=row, end_column=total_cols)
     c = ws.cell(row=row, column=1,
-                value="Processing details")
+                value="Сводная таблица: сравнение мэтчей IEDB I")
     style(c, font=HEADER_FONT, fill=HEADER_FILL, align=CENTER, border=MED_BORDER)
     row += 1
 
@@ -274,7 +274,7 @@ def write_summary_sheet(ws, all_stats: dict):
     col = 1
     ws.merge_cells(start_row=row, start_column=col,
                    end_row=row+1, end_column=col)
-    c = ws.cell(row=row, column=col, value="Antigen")
+    c = ws.cell(row=row, column=col, value="Антиген")
     style(c, font=BOLD_FONT, fill=SUBHEAD_FILL, align=CENTER, border=THIN_BORDER)
     col += 1
 
@@ -282,7 +282,7 @@ def write_summary_sheet(ws, all_stats: dict):
     ws.merge_cells(start_row=row, start_column=col,
                    end_row=row, end_column=col + len(modes_keys) * 2 - 1)
     c = ws.cell(row=row, column=col,
-                value="Processing details")
+                value="Отдельные режимы (мэтчей / % от union)")
     style(c, font=BOLD_FONT, fill=SINGLE_FILL, align=CENTER, border=THIN_BORDER)
     col_single_start = col
     col += len(modes_keys) * 2
@@ -298,7 +298,7 @@ def write_summary_sheet(ws, all_stats: dict):
     ws.merge_cells(start_row=row, start_column=col,
                    end_row=row, end_column=col + len(venn_labels) * 2 - 1)
     c = ws.cell(row=row, column=col,
-                value="Processing details")
+                value="Распределение по режимам (мэтчей / % от union)")
     style(c, font=BOLD_FONT, fill=VENN_FILL, align=CENTER, border=THIN_BORDER)
     row += 1
 
@@ -364,19 +364,19 @@ def write_summary_sheet(ws, all_stats: dict):
 
 def main():
     print("=" * 60)
-    print("IEDB I match comparison (EL / BA / Consensus)")
+    print("Сравнение мэтчей IEDB I (EL / BA / Consensus)")
     print("=" * 60)
 
     all_stats: dict[str, dict] = {}
 
     for antigen in ANTIGENS:
-        print(f"Processing details{antigen}")
+        print(f"\n▶ Антиген: {antigen}")
 
         antigen_base = os.path.join(
-            BASE, f"Processing details{antigen}", "Matches MHC I"
+            BASE, f"{antigen}", "Matches MHC I"
         )
         out_dir = os.path.join(
-            BASE, f"Processing details{antigen}", "Matches MHC I comparison"
+            BASE, f"{antigen}", "Matches MHC I comparison"
         )
         os.makedirs(out_dir, exist_ok=True)
 
@@ -389,20 +389,20 @@ def main():
                 f"RM_{antigen}_{file_suffix}.xlsx"
             )
             if not os.path.isfile(path):
-                print(f"Required input or value was not found{path}")
+                print(f"  [!] Файл не найден: {path}")
                 any_missing = True
                 continue
             sets[mode_key] = read_matches(path)
-            print(f"  {mode_key}: {len(sets[mode_key])}Processing details")
+            print(f"  {mode_key}: {len(sets[mode_key])} мэтчей")
 
         if any_missing or len(sets) < 3:
-            print(f"Processing details{antigen}Required input or value was not found")
+            print(f"  [!] Антиген {antigen} пропущен из-за отсутствующих файлов.")
             continue
 
         stats = compute_stats(sets)
         all_stats[antigen] = stats
 
-        print(f"  Union: {stats['union']}Processing details")
+        print(f"  Union: {stats['union']} мэтчей")
         print(f"  EL+BA+Consensus: {stats['venn']['EL + BA + Consensus']}")
 
         # Output generation.
@@ -415,7 +415,7 @@ def main():
         write_antigen_sheet(ws, antigen, stats, sets)
 
         wb.save(out_path)
-        print(f"Saved output{out_path}")
+        print(f"  ✓ Сохранено: {out_path}")
 
     # Implementation detail; see the repository documentation.
     if all_stats:
@@ -429,13 +429,13 @@ def main():
         # summary_path = os.path.join(SCRIPT_DIR, "IEDB_I_match_comparison_SUMMARY.xlsx")
         wb_sum = Workbook()
         ws_sum = wb_sum.active
-        ws_sum.title = "Summary"
+        ws_sum.title = "Сводка"
         ws_sum.sheet_view.showGridLines = False
         write_summary_sheet(ws_sum, all_stats)
         wb_sum.save(summary_path)
-        print(f"Processing details{summary_path}")
+        print(f"\n✓ Сводный файл: {summary_path}")
 
-    print("Completed successfully")
+    print("\nГотово.")
 
 
 if __name__ == "__main__":

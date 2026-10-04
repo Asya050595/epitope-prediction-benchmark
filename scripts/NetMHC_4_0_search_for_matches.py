@@ -22,7 +22,7 @@ try:
     import openpyxl
     from openpyxl.styles import Font, PatternFill, Alignment
 except ImportError:
-    sys.exit("Processing details")
+    sys.exit("ERROR: установите openpyxl:  pip install openpyxl")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -101,19 +101,19 @@ def excel_allele_to_xls(allele: str) -> str:
 
 
 def load_experimental_pairs(excel_path: str) -> set:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of NetMHC_4_0_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     wb = openpyxl.load_workbook(excel_path, read_only=True, data_only=True)
     ws = wb.active
     rows = ws.iter_rows(values_only=True)
     header = next(rows, None)
     if header is None:
-        wb.close(); raise ValueError(f"Processing details{excel_path}")
+        wb.close(); raise ValueError(f"Пустой Excel: {excel_path}")
     headers = [str(x).strip() if x is not None else "" for x in header]
     try:
         allele_i = headers.index("HLA allele")
         peptide_i = headers.index("CTL epitopes")
     except ValueError:
-        wb.close(); raise ValueError(f"Processing details{excel_path}Processing details{headers}")
+        wb.close(); raise ValueError(f"В {excel_path} нужны 'HLA allele' и 'CTL epitopes'; найдено: {headers}")
     pairs=set()
     for row in rows:
         allele=row[allele_i] if allele_i < len(row) else None
@@ -132,7 +132,7 @@ _PEPTIDE_RE = re.compile(r"^[A-Z]{5,}$")
 
 
 def _validate_allele_columns(row0: list, row1: list, src: str) -> list:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of NetMHC_4_0_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     allele_col_map = []
     for i, v in enumerate(row0):
         if not (isinstance(v, str) and v.startswith("HLA-")):
@@ -142,9 +142,9 @@ def _validate_allele_columns(row0: list, row1: list, src: str) -> list:
         h_rank = row1[rank_col] if rank_col < len(row1) else ""
         if h_nm != "nM" or h_rank != "Rank":
             print(
-                f"  [!] {src}Allele status{v} (col {i}) — "
-                f"Validation status"
-                f"Processing details{h_nm}'/'{h_rank}Allele status"
+                f"  [!] {src}: аллель {v} (col {i}) — "
+                f"ожидались заголовки 'nM'/'Rank', "
+                f"найдены '{h_nm}'/'{h_rank}' — аллель пропущен."
             )
             continue
         allele_col_map.append((v.strip(), nm_col, rank_col))
@@ -152,7 +152,7 @@ def _validate_allele_columns(row0: list, row1: list, src: str) -> list:
 
 
 def parse_xls_predictions(xls_path: str) -> list:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of NetMHC_4_0_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     records = []
     src = os.path.basename(xls_path)
 
@@ -160,7 +160,7 @@ def parse_xls_predictions(xls_path: str) -> list:
         lines = fh.readlines()
 
     if len(lines) < 3:
-        print(f"  [!] {src}Table status")
+        print(f"  [!] {src}: файл содержит менее 3 строк — пропущен.")
         return records
 
     row0 = lines[0].rstrip("\n").split("\t")
@@ -168,7 +168,7 @@ def parse_xls_predictions(xls_path: str) -> list:
 
     allele_col_map = _validate_allele_columns(row0, row1, src)
     if not allele_col_map:
-        print(f"  [!] {src}Allele status")
+        print(f"  [!] {src}: нет валидных аллелей — файл пропущен.")
         return records
 
     for line_no, line in enumerate(lines[2:], start=3):
@@ -183,9 +183,9 @@ def parse_xls_predictions(xls_path: str) -> list:
         for allele_str, nm_col, rank_col in allele_col_map:
             if nm_col >= len(cols) or rank_col >= len(cols):
                 print(
-                    f"  [!] {src}Table status{line_no}Allele status{allele_str} — "
-                    f"Validation status{nm_col},{rank_col}, "
-                    f"Table status{len(cols)}Table status"
+                    f"  [!] {src} строка {line_no}: аллель {allele_str} — "
+                    f"колонка вне диапазона (ожидались {nm_col},{rank_col}, "
+                    f"в строке {len(cols)} колонок)."
                 )
                 continue
             try:
@@ -193,9 +193,9 @@ def parse_xls_predictions(xls_path: str) -> list:
                 rank_val = float(cols[rank_col])
             except ValueError:
                 print(
-                    f"  [!] {src}Table status{line_no}Allele status{allele_str}, "
-                    f"Peptide status{peptide}Processing details"
-                    f"nM='{cols[nm_col]}Processing details{cols[rank_col]}Processing details"
+                    f"  [!] {src} строка {line_no}: аллель {allele_str}, "
+                    f"пептид {peptide} — не удалось распарсить "
+                    f"nM='{cols[nm_col]}' или Rank='{cols[rank_col]}' — пропущено."
                 )
                 continue
 
@@ -216,7 +216,7 @@ def parse_xls_predictions(xls_path: str) -> list:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def build_best(all_records: list, dedup_field: str) -> dict:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of NetMHC_4_0_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     best: dict = {}
     for r in all_records:
         key = (r["allele_xls"], r["peptide"])
@@ -230,35 +230,35 @@ def build_best(all_records: list, dedup_field: str) -> dict:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def check_alleles(found: set, expected: set, antigen: str) -> bool:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of NetMHC_4_0_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     sep = "-" * 60
     missing = sorted(expected - found)
     extra   = sorted(found - expected)
     ok      = not missing and not extra
 
     print(f"\n  {sep}")
-    print(f"Validation status{antigen}]")
+    print(f"  ПРОВЕРКА АЛЛЕЛЕЙ [{antigen}]")
     print(f"  {sep}")
-    print(f"Processing details{len(found)}")
-    print(f"Validation status{len(expected)}  "
-          f"{'✓ OK' if len(found) == len(expected) else 'Processing details'}")
+    print(f"  Найдено  : {len(found)}")
+    print(f"  Ожидается: {len(expected)}  "
+          f"{'✓ OK' if len(found) == len(expected) else '← НЕСООТВЕТСТВИЕ!'}")
 
-    print(f"Validation status{len(found & expected)}):")
+    print(f"\n  Совпадают ({len(found & expected)}):")
     for a in sorted(found & expected):
         print(f"    ✓ {a}")
 
     if missing:
-        print(f"Required input or value was not found{len(missing)}):")
+        print(f"\n  ОТСУТСТВУЮТ, но ожидаются ({len(missing)}):")
         for a in missing:
             print(f"    ✗ {a}")
 
     if extra:
-        print(f"Validation status{len(extra)}):")
+        print(f"\n  НАЙДЕНЫ, но НЕ ожидаются ({len(extra)}):")
         for a in extra:
             print(f"    ? {a}")
 
     if ok:
-        print(f"Validation status")
+        print(f"\n  ✓ Набор аллелей полностью совпадает.")
     print(f"  {sep}")
     return ok
 
@@ -269,7 +269,7 @@ def check_alleles(found: set, expected: set, antigen: str) -> bool:
 
 
 def classify_one_threshold(best: dict, thr: tuple, exp_xls_keys: set) -> tuple[list, list]:
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of NetMHC_4_0_search_for_matches. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     _, _, field, op, threshold_val, _ = thr
 
     def passes(r):
@@ -352,8 +352,8 @@ def save_multisheet_excel(
 
     wb.save(out_path)
     total_data = sum(len(rows) for _, _, rows in sheet_data)
-    print(f"Saved output{os.path.basename(out_path)}  "
-          f"({len(sheet_data)}Processing details{total_data}Table status")
+    print(f"  Сохранено: {os.path.basename(out_path)}  "
+          f"({len(sheet_data)} листов данных, {total_data} строк суммарно)")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -371,16 +371,16 @@ COLS_RM_UP_UNION = [
 
 def process_antigen(antigen_name: str, cfg: dict) -> str:
     sep = "=" * 62
-    print(f"\n{sep}Processing details{antigen_name}\n{sep}")
+    print(f"\n{sep}\n  Антиген: {antigen_name}\n{sep}")
     if not os.path.isfile(cfg["excel"]):
-        return "Required input or value was not found"
+        return "пропущен — Excel-файл не найден"
 
     exp_pairs = load_experimental_pairs(cfg["excel"])
     exp_xls_keys = {(excel_allele_to_xls(a), p) for a, p in exp_pairs}
     print(f"  Reference allele-peptide pairs: {len(exp_pairs)}")
     xls_files = sorted(glob.glob(cfg["xls_pattern"]))
     if not xls_files:
-        return "Required input or value was not found"
+        return "пропущен — XLS-файлы не найдены"
 
     all_records, alleles_seen = [], set()
     for xls_file in xls_files:
@@ -388,12 +388,12 @@ def process_antigen(antigen_name: str, cfg: dict) -> str:
         alleles_seen |= {r["allele_xls"] for r in recs}
         all_records.extend(recs)
     if not all_records:
-        return "Processing details"
+        return "пропущен — предсказания пусты"
 
     expected_set = set(cfg.get("expected_allele_set", set()))
     alleles_ok = check_alleles(alleles_seen, expected_set, antigen_name)
     if not alleles_ok and ALLELE_CHECK_FATAL:
-        return "Allele status"
+        return "пропущен — несоответствие аллелей"
     if not alleles_ok:
         all_records = [r for r in all_records if r["allele_xls"] in expected_set]
 
@@ -425,7 +425,7 @@ def process_antigen(antigen_name: str, cfg: dict) -> str:
         (rm_union if key in exp_xls_keys else up_union).append(row)
     results["Union_OR"] = (rm_union, up_union)
 
-    print(f"\n  {'Threshold':<18} {'RM':>8} {'UP':>8}")
+    print(f"\n  {'Порог':<18} {'RM':>8} {'UP':>8}")
     for label in ("Affinity_lt500", "Rank_lte2", "Union_OR"):
         rm, up = results[label]
         print(f"  {label:<18} {len(rm):>8} {len(up):>8}")
@@ -439,29 +439,29 @@ def process_antigen(antigen_name: str, cfg: dict) -> str:
             cols = COLS_RM_UP_UNION if label == "Union_OR" else COLS_RM_UP
             sheet_data.append((label, cols, rows))
         save_multisheet_excel(os.path.join(cfg["out"], f"{file_type}_{antigen_name}_{TOOL}.xlsx"), sheet_data, summary_rows)
-    return "success"
+    return "успешно"
 
 
 def main():
-    print("Validation status")
-    print("Processing details")
-    print(f"Allele status{ALLELE_CHECK_FATAL}\n")
+    print("NetMHC 4.0 — поиск совпадений")
+    print("Пороги: Affinity(nM) < 500  |  %Rank <= 2")
+    print(f"Стоп при несоответствии аллелей: {ALLELE_CHECK_FATAL}\n")
 
     statuses: dict = {}
     for antigen_name, cfg in ANTIGENS.items():
         statuses[antigen_name] = process_antigen(antigen_name, cfg)
 
     # Implementation detail; see the repository documentation.
-    all_ok = all(s == "success" for s in statuses.values())
+    all_ok = all(s == "успешно" for s in statuses.values())
     sep = "=" * 62
     print(f"\n\n{sep}")
     if all_ok:
-        print("Processing status")
+        print("  Обработка завершена успешно.")
     else:
-        print("Error")
+        print("  Обработка завершена с ошибками.")
     print(sep)
     for antigen_name, status in statuses.items():
-        icon = "✓" if status == "success" else "✗"
+        icon = "✓" if status == "успешно" else "✗"
         print(f"  {icon}  {antigen_name}: {status}")
     print(sep)
 

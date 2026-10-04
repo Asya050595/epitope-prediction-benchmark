@@ -657,7 +657,7 @@ def infer_tool_name(rm_file: Path, antigen: str) -> str:
 
 
 def discover_rm_files(antigen: str, base: Path) -> Dict[str, List[Path]]:
-    root = base / f"Processing details{antigen}" / MHC_DIR_NAME
+    root = base / f"{antigen}" / MHC_DIR_NAME
     tool_to_files: Dict[str, List[Path]] = {}
     if not root.exists():
         return tool_to_files
@@ -1203,7 +1203,7 @@ def analyze_antigen(
     bootstrap_iterations: int,
     random_seed: int,
 ) -> Optional[Path]:
-    antigen_dir = base / f"Processing details{antigen}"
+    antigen_dir = base / f"{antigen}"
     dataset_path = antigen_dir / f"{antigen}.xlsx"
     out_dir = antigen_dir / OUT_DIR_NAME
     out_dir.mkdir(parents=True, exist_ok=True)

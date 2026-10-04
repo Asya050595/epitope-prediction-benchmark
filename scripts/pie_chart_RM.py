@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+"""Portable implementation of pie_chart_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
 
 from project_paths import DATA_ROOT
 
@@ -77,7 +77,7 @@ def load_unique_pairs(paths):
     pairs = set()
     for path in paths:
         if not os.path.exists(path):
-            raise FileNotFoundError(f"Required input or value was not found{path}")
+            raise FileNotFoundError(f"Не найден input-файл: {path}")
         try:
             xl = pd.ExcelFile(path)
             # Threshold handling.
@@ -87,12 +87,12 @@ def load_unique_pairs(paths):
         except FileNotFoundError:
             raise
         except Exception as e:
-            raise RuntimeError(f"Processing details{path}: {e}") from e
+            raise RuntimeError(f"Не удалось прочитать {path}: {e}") from e
         cols = list(df.columns)
         a_col = guess_allele_col(cols)
         p_col = guess_peptide_col(cols)
         if a_col is None or p_col is None:
-            raise ValueError(f"Required input or value was not found{path}: {cols}")
+            raise ValueError(f"Не найдены столбцы allele/peptide в {path}: {cols}")
         for _, row in df.iterrows():
             a = str(row[a_col]).strip()
             p = str(row[p_col]).strip()
@@ -118,7 +118,7 @@ def build_tool_map_I(base, antigen):
     result = {}
     for label, paths in tools.items():
         cnt = load_unique_pairs(paths)
-        print(f"  MHC I | {label}: {cnt}Processing details")
+        print(f"  MHC I | {label}: {cnt} уникальных RM")
         result[label] = cnt
     return result
 
@@ -139,26 +139,26 @@ def build_tool_map_II(base, antigen):
     result = {}
     for label, paths in tools.items():
         cnt = load_unique_pairs(paths)
-        print(f"  MHC II | {label}: {cnt}Processing details")
+        print(f"  MHC II | {label}: {cnt} уникальных RM")
         result[label] = cnt
     return result
 
 
 def get_counts_for_antigen(antigen):
-    base = os.path.join(ROOT, f"Processing details{antigen}")
+    base = os.path.join(ROOT, f"{antigen}")
 
-    print(f"Processing details{antigen}...")
+    print(f"Считаю RM MHC I для {antigen}...")
     try:
         counts_i = build_tool_map_I(base, antigen)
     except Exception as e:
-        print(f"Error{antigen}: {e}")
+        print(f"  [ОШИБКА MHC I] {antigen}: {e}")
         counts_i = {}
 
-    print(f"Processing details{antigen}...")
+    print(f"Считаю RM MHC II для {antigen}...")
     try:
         counts_ii = build_tool_map_II(base, antigen)
     except Exception as e:
-        print(f"Error{antigen}: {e}")
+        print(f"  [ОШИБКА MHC II] {antigen}: {e}")
         counts_ii = {}
 
     return counts_i, counts_ii
@@ -169,12 +169,12 @@ def get_counts_for_antigen(antigen):
 # ---------------------------------------------------------------------------
 
 def circular_diff(a, b):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of pie_chart_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     return (a - b + 180) % 360 - 180
 
 
 def spread_clustered_angles(angles, min_gap):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of pie_chart_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     n = len(angles)
     if n <= 1:
         return list(angles)
@@ -221,7 +221,7 @@ def spread_clustered_angles(angles, min_gap):
 
 
 def normalize_percentages(values, total, decimals=1):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of pie_chart_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     if total <= 0 or not values:
         return [0.0 for _ in values]
     scale = 10 ** decimals
@@ -234,7 +234,7 @@ def normalize_percentages(values, total, decimals=1):
     for i in range(max(-remainder, 0)):
         floored[order[-(i + 1)]] -= 1
     if sum(floored) != 100 * scale:
-        raise ArithmeticError("Processing details")
+        raise ArithmeticError("Сумма отображаемых процентов не равна 100%")
     return [f / scale for f in floored]
 
 
@@ -250,7 +250,7 @@ def draw_pie_ax(ax, counts, colors, title, letter, label_overrides=None):
     clrs   = [colors[k] for k, v in counts.items() if v > 0]
 
     if not values or sum(values) == 0:
-        ax.text(0.5, 0.5, "Processing details", transform=ax.transAxes,
+        ax.text(0.5, 0.5, "Нет данных", transform=ax.transAxes,
                 ha='center', va='center', fontsize=LABEL_FONTSIZE)
         ax.axis('off')
         return
@@ -371,7 +371,7 @@ PANEL_LABEL_OVERRIDES = {}
 # ---------------------------------------------------------------------------
 
 def render_combined_figure(data, out_path):
-    """English documentation for this module or helper is provided in the repository README and in the surrounding code."""
+    """Portable implementation of pie_chart_RM. See the repository README and data/README.md for inputs, outputs, and execution instructions."""
     width_in  = WIDTH_MM / 25.4
     height_in = HEIGHT_MM / 25.4
 
@@ -415,13 +415,13 @@ def main():
     data = {}
     for ag in ANTIGENS:
         print(f"\n{'='*50}")
-        print(f"Processing details{ag}")
+        print(f"Антиген: {ag}")
         data[ag] = get_counts_for_antigen(ag)
 
     out_path = os.path.join(OUT_DIR, "pie_RM_all.png")
     render_combined_figure(data, out_path)
-    print(f"Saved output{out_path}")
-    print("Completed successfully")
+    print(f"\n\u2713 Сохранено: {out_path}")
+    print("Готово.")
 
 
 if __name__ == "__main__":

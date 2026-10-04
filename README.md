@@ -49,10 +49,16 @@ is optional.
 
 ## Input data
 
-Raw experimental reference files and tool outputs should be copied into
+Raw experimental reference files and tool outputs must be copied into
 `data/<antigen>/` while preserving the subdirectory and file names shown in
 [data/README.md](data/README.md). Generated workbooks are written alongside the
 corresponding antigen data, matching the original analysis workflow.
+
+The repository currently contains the analysis code and the input-data layout,
+but not the study input files. Consequently, a fresh clone can pass the static
+repository checks but cannot reproduce numerical results until the data archive
+is installed. Benchmarking scripts stop with an error when required inputs are
+missing; they never report empty inputs as zero-valued results.
 
 Large raw files and generated results are excluded by `.gitignore`. If they are
 required for peer review and redistribution is permitted, publish them through
@@ -157,17 +163,18 @@ python -m compileall -q scripts
 python scripts/check_repository.py
 ```
 
-The repository check rejects absolute paths tied to the original workstation
-and Cyrillic text in published Python files.
+The repository check rejects absolute paths tied to the original workstation,
+known path-conversion corruption, and Cyrillic comments or module docstrings.
+Runtime labels inherited from the validated analysis outputs are not rewritten
+mechanically because some are Excel sheet names or keys used downstream.
 
 ## Citation
 
-See [CITATION.cff](CITATION.cff). Replace the placeholder account-level author
-entry with the publication authors' full names and ORCID identifiers before the
-final release, then archive a tagged release in Zenodo to obtain a citable DOI.
+See [CITATION.cff](CITATION.cff). Add the publication title, complete author
+list, and ORCID identifiers before the final release, then archive a tagged
+release in Zenodo to obtain a citable DOI.
 
 ## License
 
 This repository is distributed under the MIT License. Prediction-tool software,
 model weights, and input datasets may have separate licenses or terms of use.
-
